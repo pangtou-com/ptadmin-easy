@@ -1,0 +1,13 @@
+.idea
+*.DS_Store
+/vendor
+/coverage
+sftp-config.json
+composer.lock
+.subsplit
+.php_cs.cache
+.php-cs-fixer.cache
+.git
+.phpunit.result.cache
+build
+publish.sh
