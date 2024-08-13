@@ -1,7 +1,7 @@
 {
     "name": "ptadmin/easy",
     "description": "表单模型构建，主要用于模型的创建",
-    "version": "3",
+    "version": "v0.0.1",
     "license": "Apache-2.0",
     "keywords": ["HTML", "admin", "Form", "Mod", "低代码平台", "addon", "PTAdmin"],
     "type": "library",
