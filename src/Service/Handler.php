@@ -64,6 +64,9 @@ class Handler extends AbstractCore
         return $model;
     }
 
+    /**
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function edit($data, $id, bool $isValidate = true): int
     {
         if ($isValidate) {

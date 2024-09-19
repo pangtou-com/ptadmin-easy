@@ -33,6 +33,9 @@ class ModelBuild extends Model
 
     protected $table;
 
+    /** @var int 最大可用的分页大小，默认为 10000 条。 */
+    protected $max_limit = 10000;
+
     /**
      * 这里要求数据表名称为完整表名.
      *
@@ -74,6 +77,9 @@ class ModelBuild extends Model
     public function getPerPage(): int
     {
         $limit = (int) App::make('request')->get('limit');
+        if ($limit > $this->max_limit) {
+            return $this->max_limit;
+        }
         if ($limit > 0) {
             return $limit;
         }
