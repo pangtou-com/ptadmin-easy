@@ -51,7 +51,7 @@ use PTAdmin\Easy\Model\ModField;
 class ComponentManager
 {
     /** @var string[][] 组件map */
-    private const COMPONENTS = [
+    private static $COMPONENTS = [
         // 文本组件
         'text' => ['class' => Text::class, 'label' => '单行文本', 'label_key' => 'component.text'],
         'hidden' => ['class' => Hidden::class, 'label' => '隐藏域', 'label_key' => 'component.hidden'],
@@ -122,11 +122,11 @@ class ComponentManager
      */
     public static function insertComponent(string $type, array $component): void
     {
-        if (isset(self::COMPONENTS[$type])) {
+        if (isset(self::$COMPONENTS[$type])) {
             throw new EasyException("【{$type}】组件已存在");
         }
         (new self())->checkInstallComponent($component);
-        self::COMPONENTS[$type] = $component;
+        self::$COMPONENTS[$type] = $component;
     }
 
     /**
@@ -138,7 +138,7 @@ class ComponentManager
     public static function setComponent(string $type, array $component): void
     {
         (new self())->checkInstallComponent($component);
-        self::COMPONENTS[$type] = $component;
+        self::$COMPONENTS[$type] = $component;
     }
 
     /**
@@ -150,7 +150,7 @@ class ComponentManager
      */
     public static function getComponent(string $type): array
     {
-        return self::COMPONENTS[$type] ?? [];
+        return self::$COMPONENTS[$type] ?? [];
     }
 
     /**
@@ -164,14 +164,14 @@ class ComponentManager
     public static function getComponentOptions(array $allow = [], array $deny = []): array
     {
         $results = [];
-        foreach (self::COMPONENTS as $key => $val) {
+        foreach (self::$COMPONENTS as $key => $val) {
             if (\count($allow) > 0 && !\in_array($key, $allow, true)) {
                 continue;
             }
             if (\count($deny) > 0 && \in_array($key, $deny, true)) {
                 continue;
             }
-            $results[] = ['label' => $val['title'], 'label_key' => $val['label_key'], 'value' => $key];
+            $results[] = ['label' => $val['label'], 'label_key' => $val['label_key'], 'value' => $key];
         }
 
         return $results;
@@ -205,6 +205,9 @@ class ComponentManager
     {
         if (!isset($component['class']) || (!isset($component['title']) && !isset($component['label_key']))) {
             throw new EasyException('组件配置错误');
+        }
+        if (!class_exists($component['class'])) {
+            throw new EasyException('组件类型不可使用');
         }
         $com = new $component['class']();
         if (!$com instanceof IComponent) {
