@@ -29,7 +29,10 @@ class EasyServiceProviders extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../../config/easy.php', 'easy');
+        // 配置文件以发布到 config 目录下则不需要在读取配置文件
+        if (!file_exists(config_path('easy.php'))) {
+            $this->mergeConfigFrom(__DIR__.'/../../config/easy.php', 'easy');
+        }
     }
 
     public function boot(): void
@@ -42,11 +45,11 @@ class EasyServiceProviders extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../../config/easy.php' => config_path('easy.php'),
-            ], 'easy-config');
+            ], 'config');
 
             $this->publishes([
                 __DIR__.'/../../database/migrations' => database_path('migrations'),
-            ], 'easy-migrations');
+            ], 'migrations');
         }
     }
 }
