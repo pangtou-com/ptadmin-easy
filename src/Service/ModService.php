@@ -196,14 +196,14 @@ class ModService
     /**
      * 通过数据表名称获取模型.
      *
-     * @param $code
+     * @param $table_name
      *
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model
      */
-    public function byCode($code)
+    public function byTableName($table_name)
     {
         $filterMap = Mod::query();
-        $filterMap->where('table_name', $code);
+        $filterMap->where('table_name', $table_name);
 
         return $filterMap->firstOrFail();
     }
