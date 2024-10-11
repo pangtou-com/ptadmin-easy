@@ -27,8 +27,12 @@ return [
         'mod_field' => 'mod_fields',
     ],
     'cache' => [
-        'key' => 'ptadmin.easy.cache',
+        // 缓存key
+        'key' => '__ptadmin.easy.cache__',
+        // 缓存驱动
         'store' => 'default',
+        // 缓存过期时间默认为30天
+        'expiration_time' => \DateInterval::createFromDateString('30 days'),
     ],
     // 模型组件在新增时除默认字段外还会存在每个组件所独有的信息.
     // 如：`text`组件, 会存在一个`length`字段用于表示字符串长度。

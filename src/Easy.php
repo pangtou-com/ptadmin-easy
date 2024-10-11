@@ -25,11 +25,13 @@ namespace PTAdmin\Easy;
 
 use PTAdmin\Easy\Components\ComponentManager;
 use PTAdmin\Easy\Exceptions\InvalidDataException;
+use PTAdmin\Easy\Service\Handler;
 use PTAdmin\Easy\Service\ModFieldService;
 use PTAdmin\Easy\Service\ModService;
+use PTAdmin\Easy\Service\Render;
 
 /**
- * @method static ModService mod()        模块字段对象
+ * @method static ModService mod()        模块管理对象
  * @method static ModFieldService field() 模块字段对象
  *
  * @see https://docs.pangtou.com/docs/easy-forms
@@ -54,6 +56,30 @@ class Easy
         }
 
         return new self::$handler[$name](...$arguments);
+    }
+
+    /**
+     * 获取数据处理对象
+     *
+     * @param $table_name
+     *
+     * @return Handler
+     */
+    public static function handler($table_name): Handler
+    {
+        return Handler::make($table_name);
+    }
+
+    /**
+     * 获取渲染器对象
+     *
+     * @param $table_name
+     *
+     * @return Render
+     */
+    public static function render($table_name): Render
+    {
+        return Render::make($table_name);
     }
 
     /**

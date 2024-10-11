@@ -66,20 +66,24 @@ class Render extends AbstractCore
     /**
      * 返回表单构建的数据.
      *
+     * @param bool $is_release 是否开放用户投稿
+     *
      * @return array
      */
-    public function toFormArray(): array
+    public function toFormArray(bool $is_release = false): array
     {
-        return array_values($this->getFormBuildRender());
+        return array_values($this->getFormBuildRender($is_release));
     }
 
     /**
      * 返回表单页面的html.
+     *
+     * @param bool $is_release 是否开放用户投稿
      */
-    public function toFormHtml()
+    public function toFormHtml(bool $is_release = false)
     {
         $render = app('layui');
-        $render->setRules($this->getFormBuildRender());
+        $render->setRules($this->getFormBuildRender($is_release));
 
         return $render;
     }

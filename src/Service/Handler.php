@@ -33,7 +33,7 @@ class Handler extends AbstractCore
         return new self($code);
     }
 
-    public function lists($search = []): array
+    public function lists($search = [], $order = []): array
     {
         $filterMap = $this->newQuery();
 
@@ -65,6 +65,9 @@ class Handler extends AbstractCore
     }
 
     /**
+     * @param mixed $data
+     * @param mixed $id
+     *
      * @throws \Illuminate\Validation\ValidationException
      */
     public function edit($data, $id, bool $isValidate = true): int
