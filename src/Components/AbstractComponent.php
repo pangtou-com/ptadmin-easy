@@ -43,7 +43,7 @@ abstract class AbstractComponent implements IComponent
     protected $extra;
 
     /** @var array 数据新增时需要保存的额外数据：如rules、style、class、prop等 */
-    protected $setup;
+    protected $setup = [];
 
     /** @var array|ModField */
     protected $data;
@@ -100,7 +100,7 @@ abstract class AbstractComponent implements IComponent
 
     public function getSetup(): array
     {
-        return $this->setup;
+        return $this->setup ?? [];
     }
 
     /**
