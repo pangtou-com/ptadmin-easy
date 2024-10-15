@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace PTAdmin\Easy\Components;
 
+use Illuminate\Support\Arr;
 use PTAdmin\Easy\Contracts\IComponent;
 use PTAdmin\Easy\Exceptions\EasyException;
 use PTAdmin\Easy\Exceptions\InvalidDataException;
@@ -43,7 +44,7 @@ abstract class AbstractComponent implements IComponent
     protected $extra;
 
     /** @var array 数据新增时需要保存的额外数据：如rules、style、class、prop等 */
-    protected $setup = [];
+    protected $setup;
 
     /** @var array|ModField */
     protected $data;
@@ -95,12 +96,20 @@ abstract class AbstractComponent implements IComponent
 
     public function getExtra(): array
     {
-        return $this->extra;
+        if (null === $this->extra) {
+            $this->extra = $this->getModField('extra');
+        }
+
+        return Arr::wrap($this->extra);
     }
 
     public function getSetup(): array
     {
-        return $this->setup ?? [];
+        if (null === $this->setup) {
+            $this->setup = $this->getModField('setup');
+        }
+
+        return Arr::wrap($this->setup);
     }
 
     /**
