@@ -70,7 +70,16 @@ class ModService
 
             throw new EasyException($exception->getMessage());
         }
-        $this->initialize($model);
+
+        try {
+            $this->initialize($model);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            TableHandle::dropTable($data['table_name']);
+
+            throw new EasyException($e->getMessage());
+        }
 
         return $model;
     }

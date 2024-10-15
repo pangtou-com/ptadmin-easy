@@ -26,4 +26,5 @@ namespace PTAdmin\Easy\Components\Attachment;
 class Video extends Attachment
 {
     protected $type = 'video';
+    protected $column_type = 'string';
 }

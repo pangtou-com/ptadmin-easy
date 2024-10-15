@@ -41,7 +41,8 @@ class Select extends AbstractComponent
     /** @var string 基于配置信息 */
     public const CONFIG = 'config';
     protected $option = true;
-    protected $type = 'tinyInteger';
+    protected $type = 'select';
+    protected $column_type = 'tinyInteger';
 
     /**
      * @return string
@@ -55,7 +56,7 @@ class Select extends AbstractComponent
             }
         }
 
-        return $this->type;
+        return $this->column_type;
     }
 
     /**
@@ -131,16 +132,10 @@ class Select extends AbstractComponent
         foreach ($content as $key => $datum) {
             $temp = explode('=', $datum);
             if (1 === \count($temp)) {
-                $res[] = [
-                    'label' => $temp[0],
-                    'value' => $key,
-                ];
+                $res[] = ['label' => $temp[0], 'value' => $key];
             }
             if (2 <= \count($temp)) {
-                $res[] = [
-                    'label' => $temp[1],
-                    'value' => $temp[0],
-                ];
+                $res[] = ['label' => $temp[1], 'value' => $temp[0]];
             }
         }
 

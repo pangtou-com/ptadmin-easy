@@ -34,4 +34,7 @@ class Attachment extends AbstractComponent
     protected $rules = [
         'required' => '请上传附件',
     ];
+
+    protected $column_type = 'string';
+
 }

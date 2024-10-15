@@ -26,4 +26,5 @@ namespace PTAdmin\Easy\Components\Attachment;
 class Image extends Attachment
 {
     protected $type = 'image';
+    protected $column_type = 'string';
 }
