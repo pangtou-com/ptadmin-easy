@@ -209,6 +209,31 @@ class ModService
     }
 
     /**
+     * 通过模块名称获取模型.
+     *
+     * @param $mod_name
+     *
+     * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
+     */
+    public function byModName($mod_name)
+    {
+        $filterMap = Mod::query();
+        $filterMap->where('mod_name', $mod_name);
+
+        return $filterMap->get();
+    }
+
+    /**
+     * 新建查询.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function newQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return Mod::query();
+    }
+
+    /**
      * 发布模型.
      *
      * @param mixed $id
