@@ -101,4 +101,22 @@ interface IComponent
      * @return mixed
      */
     public function getColumnOptions($data);
+
+    /**
+     * 数据读取格式化.
+     *
+     * @param $value
+     *
+     * @return mixed
+     */
+    public function toFormat($value);
+
+    /**
+     * 存储格式化.
+     *
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    public function saveFormat($value);
 }

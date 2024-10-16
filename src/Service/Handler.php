@@ -25,20 +25,52 @@ namespace PTAdmin\Easy\Service;
 
 use Illuminate\Support\Arr;
 use PTAdmin\Easy\Model\ModelBuild;
+use PTAdmin\Easy\Service\Traits\ModSearch;
 
 class Handler extends AbstractCore
 {
-    public function lists($search = [], $order = []): array
+    use ModSearch;
+
+    /**
+     * 获取列表数据.
+     *
+     * @param array $data  搜索数据
+     * @param array $allow 搜索规则信息, 参考模型规则的写法
+     * @param array $order 排序方式['field' => 'desc', 'field1' => 'asc']
+     *
+     * @return mixed
+     */
+    public function lists(array $data = [], array $allow = [], array $order = [])
     {
         $filterMap = $this->newQuery();
 
-        return collect($filterMap->paginate())->toArray();
+        // 搜索处理
+        if (\count($data) > 0) {
+            $filterMap = $this->buildQuery($filterMap, $data, $allow);
+        }
+
+        // 排序处理
+        if (\count($order)) {
+            foreach ($order as $key => $val) {
+                if (!\in_array($val, ['asc', 'desc'], true)) {
+                    continue;
+                }
+                $filterMap->orderBy($key, $val);
+            }
+        }
+
+        $data = $filterMap->paginate()->toArray();
+        if (\count($data['data']) > 0) {
+            $data['data'] = $this->actionsFormat($data['data']);
+        }
+
+        return $data;
     }
 
     /**
      * 存储数据.
      *
-     * @param array $data
+     * @param array $data       保存的数据
      * @param bool  $isValidate 是否执行数据验证
      *
      * @throws \Illuminate\Validation\ValidationException
@@ -83,7 +115,9 @@ class Handler extends AbstractCore
 
     public function show($id)
     {
-        return $this->newQuery()->findOrFail($id);
+        return $this->actionFormat(
+            $this->newQuery()->findOrFail($id)
+        );
     }
 
     /**

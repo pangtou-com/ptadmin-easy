@@ -190,4 +190,14 @@ abstract class AbstractComponent implements IComponent
     {
         return $this->type;
     }
+
+    public function saveFormat($value)
+    {
+        return $value;
+    }
+
+    public function toFormat($value)
+    {
+        return $value;
+    }
 }

@@ -29,10 +29,12 @@ use PTAdmin\Easy\Contracts\IComponent;
 use PTAdmin\Easy\Exceptions\EasyException;
 use PTAdmin\Easy\Model\Mod;
 use PTAdmin\Easy\Service\Traits\ModCache;
+use PTAdmin\Easy\Service\Traits\ModFormat;
 
 abstract class AbstractCore
 {
     use ModCache;
+    use ModFormat;
     /** @var string 模型名称 */
     protected $code;
 
@@ -58,7 +60,7 @@ abstract class AbstractCore
     protected $attributes;
 
     /** @var IComponent[] 模型字段对象 集合 */
-    protected $column;
+    protected $columnComponent;
 
     /**
      * 构造函数.
@@ -149,6 +151,18 @@ abstract class AbstractCore
     }
 
     /**
+     * 判断当前字段是否属于模型管理字段.
+     *
+     * @param $name
+     *
+     * @return bool
+     */
+    public function isFieldModField($name): bool
+    {
+        return isset($this->attributes[$name]);
+    }
+
+    /**
      * 获取验证规则.
      *
      * @return array[]
@@ -201,7 +215,7 @@ abstract class AbstractCore
     {
         $fields = $this->getCacheModField();
         foreach ($fields as $field) {
-            $column = $this->getComponent($field['type'], $field['name']);
+            $column = $this->getComponent($field['name'], $field['type']);
             $validateRule = $this->parserValidateRule($column, $field);
             $rule = $this->parserFormRenderData($column, $field);
             if (\count($validateRule) > 0) {
@@ -227,14 +241,46 @@ abstract class AbstractCore
      *
      * @return IComponent
      */
-    protected function getComponent($type, $name): IComponent
+    protected function getComponent($name, $type = null): IComponent
     {
-        if (isset($this->column[$name])) {
-            return $this->column[$name];
+        if (isset($this->columnComponent[$name])) {
+            return $this->columnComponent[$name];
         }
-        $this->column[$name] = ComponentManager::build($type);
+        if (null === $type) {
+            $type = $this->byFieldNameGetType($name);
+        }
+        $this->columnComponent[$name] = ComponentManager::build($type);
 
-        return $this->column[$name];
+        return $this->columnComponent[$name];
+    }
+
+    /**
+     * 根据字段名称获取对应的数据类型.
+     *
+     * @param $name
+     *
+     * @return mixed
+     */
+    protected function byFieldNameGetType($name)
+    {
+        $fields = $this->getCacheModField();
+        foreach ($fields as $field) {
+            if ($field['name'] === $name) {
+                return $field['type'];
+            }
+        }
+
+        throw new EasyException('异常的数据类型');
+    }
+
+    /**
+     * 获取组件集合.
+     *
+     * @return IComponent[]
+     */
+    protected function getComponents(): array
+    {
+        return $this->columnComponent ?? [];
     }
 
     /**
