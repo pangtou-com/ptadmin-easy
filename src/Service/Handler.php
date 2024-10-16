@@ -28,11 +28,6 @@ use PTAdmin\Easy\Model\ModelBuild;
 
 class Handler extends AbstractCore
 {
-    public static function make($code): self
-    {
-        return new self($code);
-    }
-
     public function lists($search = [], $order = []): array
     {
         $filterMap = $this->newQuery();
@@ -57,7 +52,7 @@ class Handler extends AbstractCore
         }
         // 1、参数过滤，只展示存储需要的字段
         // 2、参数转换，需要对特殊格式的参数进行转换
-        $model = ModelBuild::build($this->getMod()->table_name);
+        $model = ModelBuild::build($this->code);
         $model->fill($data);
         $model->save();
 
@@ -96,6 +91,6 @@ class Handler extends AbstractCore
      */
     public function newQuery(): \Illuminate\Database\Eloquent\Builder
     {
-        return ModelBuild::build($this->getMod()->table_name)->newQuery();
+        return ModelBuild::build($this->code)->newQuery();
     }
 }

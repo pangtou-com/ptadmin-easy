@@ -25,11 +25,14 @@ namespace PTAdmin\Easy\Service;
 
 use Illuminate\Support\Facades\Validator;
 use PTAdmin\Easy\Components\ComponentManager;
+use PTAdmin\Easy\Contracts\IComponent;
 use PTAdmin\Easy\Exceptions\EasyException;
 use PTAdmin\Easy\Model\Mod;
+use PTAdmin\Easy\Service\Traits\ModCache;
 
 abstract class AbstractCore
 {
+    use ModCache;
     /** @var string 模型名称 */
     protected $code;
 
@@ -54,14 +57,47 @@ abstract class AbstractCore
     /** @var array 字段属性信息 */
     protected $attributes;
 
-    public function __construct($data)
+    /** @var IComponent[] 模型字段对象 集合 */
+    protected $column;
+
+    /**
+     * 构造函数.
+     * 传入参数支持： Mod对象、模型ID、模型名称.
+     *
+     * @param Mod|string $param
+     */
+    private function __construct($param)
     {
-        $this->code = $data;
-        if ($data instanceof Mod) {
-            $this->mod = $data;
-            $this->code = $data->table_name;
+        if ($param instanceof Mod) {
+            $this->mod = $param;
+            $this->code = $param->table_name;
+        } elseif (\is_string($param) && 0 !== (int) $param) {
+            $this->mod = Mod::query()->findOrFail($param);
+            $this->code = $this->mod->table_name;
+        } elseif (\is_string($param)) {
+            $this->code = $param;
+        } else {
+            throw new EasyException("【{$param}】参数错误,未知的模型名称");
         }
-        $this->initializeRules();
+    }
+
+    /**
+     * 初始化构建.
+     *
+     * @param Mod|string $code  mod对象、模型ID、模型名称
+     * @param bool       $force 是否强制更新， 默认为 false
+     *
+     * @return static
+     */
+    public static function make($code, bool $force = false): self
+    {
+        $obj = new static($code);
+        if ($force) {
+            $obj->updateCache();
+        }
+        $obj->initialize();
+
+        return $obj;
     }
 
     /**
@@ -75,7 +111,7 @@ abstract class AbstractCore
     /**
      * 获取表单构建规则.
      *
-     * @param bool $is_release 是否开放用户投稿
+     * @param bool $is_release 是否为用户投稿，当为用户投稿时表单只返回用户投稿相关内容
      *
      * @return array
      */
@@ -161,12 +197,11 @@ abstract class AbstractCore
     /**
      * 初始化规则信息，将模型规则分类解析为：表单、表单验证、搜索等.
      */
-    protected function initializeRules(): void
+    protected function initialize(): void
     {
-        $fields = $this->getModField();
-
+        $fields = $this->getCacheModField();
         foreach ($fields as $field) {
-            $column = ComponentManager::build($field['type']);
+            $column = $this->getComponent($field['type'], $field['name']);
             $validateRule = $this->parserValidateRule($column, $field);
             $rule = $this->parserFormRenderData($column, $field);
             if (\count($validateRule) > 0) {
@@ -182,6 +217,24 @@ abstract class AbstractCore
                 $this->tableRenderRules[$field['name']] = $rule;
             }
         }
+    }
+
+    /**
+     * 获取组件对象
+     *
+     * @param $type
+     * @param $name
+     *
+     * @return IComponent
+     */
+    protected function getComponent($type, $name): IComponent
+    {
+        if (isset($this->column[$name])) {
+            return $this->column[$name];
+        }
+        $this->column[$name] = ComponentManager::build($type);
+
+        return $this->column[$name];
     }
 
     /**

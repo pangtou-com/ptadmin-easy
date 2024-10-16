@@ -6,5 +6,6 @@ parameters:
         # - package/View/Providers/ServiceProvider.php
     ignoreErrors:
         - '#^Variable method call on Illuminate\\Database\\Schema\\Blueprint\.#'
+        - '#^Unsafe usage of new static\(\)\.#'
     excludePaths:
         - tests/*      # 忽略 tests 目录及其子目录

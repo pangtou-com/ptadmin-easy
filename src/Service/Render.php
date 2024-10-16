@@ -28,11 +28,6 @@ namespace PTAdmin\Easy\Service;
  */
 class Render extends AbstractCore
 {
-    public static function make($code): self
-    {
-        return new self($code);
-    }
-
     /**
      * 列表展示字段.
      *
@@ -79,13 +74,19 @@ class Render extends AbstractCore
      * 返回表单页面的html.
      *
      * @param bool $is_release 是否开放用户投稿
+     *
+     * @return mixed
      */
     public function toFormHtml(bool $is_release = false)
     {
-        $render = app('layui');
-        $render->setRules($this->getFormBuildRender($is_release));
+        if (class_exists(\PTAdmin\Build\Layui::class)) {
+            $render = \PTAdmin\Build\Layui::make();
+            $render->setRules($this->getFormBuildRender($is_release));
 
-        return $render;
+            return $render;
+        }
+
+        return '未定义预览操作类';
     }
 
     /**

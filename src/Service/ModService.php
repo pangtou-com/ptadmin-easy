@@ -254,6 +254,8 @@ class ModService
         $mod->is_publish = 1;
         $mod->status = 1;
         $mod->save();
+        // 发布模型时更新缓存
+        Handler::make($mod, true);
     }
 
     /**
@@ -298,7 +300,7 @@ class ModService
     {
         $mod = Mod::query()->findOrFail($id);
 
-        return Render::make($mod)->toPreviewFormHtml();
+        return Render::make($mod, true)->toPreviewFormHtml();
     }
 
     /**
