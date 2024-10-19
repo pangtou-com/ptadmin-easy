@@ -67,6 +67,7 @@ class create_mod_and_field extends Migration
                 $table->unsignedTinyInteger('is_search')->default(0);
                 $table->unsignedTinyInteger('is_table')->default(0);
                 $table->unsignedTinyInteger('is_required')->default(0);
+                $table->unsignedTinyInteger('is_system')->default(0)->comment('系统字段，不允许删除和修改');
                 $table->json('setup')->nullable()->comment('表单构建扩展信息如：style、class等');
                 $table->json('extra')->nullable()->comment('扩展字段信息');
                 $table->unsignedTinyInteger('weight')->default(99)->comment('权重');

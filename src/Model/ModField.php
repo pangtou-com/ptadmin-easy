@@ -28,25 +28,26 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\App;
 
 /**
- * @property int $id
- * @property string $title 字段标题
- * @property string $name 字段名称
- * @property string $type 字段类型
- * @property int $mod_id 模块ID
+ * @property int    $id
+ * @property string $title       字段标题
+ * @property string $name        字段名称
+ * @property string $type        字段类型
+ * @property int    $mod_id      模块ID
  * @property string $default_val 默认值
- * @property string $tips 提示信息，用于表单构建时的提示信息
- * @property string $intro 描述备注信息
- * @property int $is_release 会员投稿
- * @property int $is_search 搜索字段
- * @property int $is_table 列表展示
- * @property int $is_required 是否必填
- * @property int $status 状态
- * @property int $weight 排序处理
- * @property array $setup 安装配置信息
- * @property array $extra 扩展信息【部分自定义字段的扩展配置值内容】
- * @property int $deleted_at 删除时间
- * @property int $created_at 创建时间
- * @property int $updated_at 修改时间
+ * @property string $tips        提示信息，用于表单构建时的提示信息
+ * @property string $intro       描述备注信息
+ * @property int    $is_release  会员投稿
+ * @property int    $is_search   搜索字段
+ * @property int    $is_system   系统字段【不允许删除和修改】
+ * @property int    $is_table    列表展示
+ * @property int    $is_required 是否必填
+ * @property int    $status      状态
+ * @property int    $weight      排序处理
+ * @property array  $setup       安装配置信息
+ * @property array  $extra       扩展信息【部分自定义字段的扩展配置值内容】
+ * @property int    $deleted_at  删除时间
+ * @property int    $created_at  创建时间
+ * @property int    $updated_at  修改时间
  */
 class ModField extends Model
 {
@@ -87,7 +88,7 @@ class ModField extends Model
 
     public function getPerPage(): int
     {
-        $limit = (int)App::make('request')->get("limit");
+        $limit = (int) App::make('request')->get('limit');
         if ($limit > 0) {
             return $limit;
         }

@@ -115,7 +115,12 @@ class ModFieldService
      */
     public function delete($id): void
     {
-        ModField::query()->findOrFail($id)->delete();
+        /** @var ModField $dao */
+        $dao = ModField::query()->findOrFail($id);
+        if (1 === $dao->is_system) {
+            throw new EasyException('系统字段不允许删除');
+        }
+        $dao->delete();
     }
 
     /**

@@ -23,6 +23,9 @@ declare(strict_types=1);
 
 namespace PTAdmin\Easy\Service\Extensions;
 
+use PTAdmin\Easy\Components\ComponentManager;
+use PTAdmin\Easy\Exceptions\InvalidDataException;
+
 /**
  * 扩展模型新增时需要处理的默认字段内容
  * todo 当前只支持数组类型的插入扩展，还需要增加对象类型的处理方式.
@@ -58,7 +61,6 @@ class ModColumnExtension
     {
         $instance = new self();
         $extension = $instance->wrap($extension);
-        $instance->checkExtension($extension);
 
         self::$extension[$modName] = $extension;
     }
@@ -73,7 +75,7 @@ class ModColumnExtension
     {
         $instance = new self();
         $extension = $instance->wrap($extension);
-        $instance->checkExtension($extension);
+
         self::$extension[$modName] = array_merge($extension, self::$extension[$modName] ?? []);
     }
 
@@ -82,8 +84,23 @@ class ModColumnExtension
      *
      * @param array $extension
      */
-    private function checkExtension(array $extension): void
+    public static function checkExtension(array $extension): void
     {
+        $field = [];
+        foreach ($extension as $item) {
+            $type = $item['type'] ?? '';
+            $component = ComponentManager::getComponent($type);
+            if (0 === \count($component)) {
+                throw new InvalidDataException('ModColumnExtension::setExtension 扩展内容必须保留有效的【type】字段');
+            }
+            if (!isset($item['name'])) {
+                throw new InvalidDataException('ModColumnExtension::setExtension 扩展内容必须保留有效的【name】字段,且必须为字符串类型');
+            }
+            if (\in_array($item['name'], $field, true)) {
+                throw new InvalidDataException('ModColumnExtension::setExtension 扩展内容【name】字段值重复');
+            }
+            $field[] = $item['name'];
+        }
     }
 
     /**

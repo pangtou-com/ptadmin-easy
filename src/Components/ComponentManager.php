@@ -26,6 +26,7 @@ namespace PTAdmin\Easy\Components;
 use PTAdmin\Easy\Components\Attachment\Attachment;
 use PTAdmin\Easy\Components\Attachment\Image;
 use PTAdmin\Easy\Components\Attachment\Video;
+use PTAdmin\Easy\Components\Number\Connect;
 use PTAdmin\Easy\Components\Select\Checkbox;
 use PTAdmin\Easy\Components\Select\Radio;
 use PTAdmin\Easy\Components\Select\Select;
@@ -82,6 +83,7 @@ class ComponentManager
         'switches' => ['class' => Switches::class, 'label' => '开关', 'label_key' => 'component.switch'],
         'selectMultiple' => ['class' => SelectMultiple::class, 'label' => '下拉多选', 'label_key' => 'component.selectMultiple'],
 
+        'connect' => ['class' => Connect::class, 'label' => '关联ID', 'label_key' => 'component.connect'],
         // 树形组件
         // 'selectTree' => ['class' => Text::class, 'label' => '下拉树', 'label_key' => 'component.selectTree'],
         // 'treeSelect' => ['class' => Text::class, 'label' => '树形下拉框', 'label_key' => 'component.treeSelect'],

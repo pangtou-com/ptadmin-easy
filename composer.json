@@ -24,7 +24,9 @@
         "phpstan/phpstan-strict-rules": "^1.5",
         "phpunit/phpunit": "^9.5.10",
         "orchestra/testbench": "^5.0|^6.0|^7.0|^8.0",
-        "mockery/mockery": "^1.6"
+        "mockery/mockery": "^1.6",
+        "pestphp/pest": "^1.23",
+        "pestphp/pest-plugin-laravel": "^1.4"
     },
     "autoload": {
         "psr-4": {
@@ -38,14 +40,19 @@
     },
     "scripts": {
         "phpstan": "vendor/bin/phpstan.phar analyse src --configuration phpstan.neon",
-        "test:build": "XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text --coverage-html build/coverage",
-        "test": "vendor/bin/phpunit"
+        "test:pest": "./vendor/bin/pest --no-interaction",
+        "test:build": "XDEBUG_MODE=coverage ./vendor/bin/pest --coverage "
     },
     "extra": {
         "laravel": {
             "providers": [
                 "PTAdmin\\Easy\\Providers\\EasyServiceProviders"
             ]
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
         }
     }
 }

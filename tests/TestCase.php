@@ -25,18 +25,11 @@ namespace PTAdmin\Easy\Tests;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Orchestra\Testbench\TestCase as Orchestra;
-use PTAdmin\Easy\Model\Mod;
-use PTAdmin\Easy\Model\ModField;
 use PTAdmin\Easy\Providers\EasyServiceProviders;
 
 abstract class TestCase extends Orchestra
 {
     use RefreshDatabase;
-
-    /** @var Mod */
-    protected $testMod;
-    /** @var ModField */
-    protected $testModField;
 
     protected static $migration;
 

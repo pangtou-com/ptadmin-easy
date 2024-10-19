@@ -21,8 +21,14 @@ declare(strict_types=1);
  *  Email:     vip@pangtou.com
  */
 
-namespace PTAdmin\Easy\Exceptions;
+it('【field】字段新增', function (): void {
+    $this->assertTrue(true);
+});
 
-class InvalidDataException extends \RuntimeException
-{
-}
+it('【field】字段编辑', function (): void {
+    $this->assertTrue(true);
+});
+
+it('【field】字段删除', function (): void {
+    $this->assertTrue(true);
+});

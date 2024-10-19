@@ -63,17 +63,17 @@ class Mod extends Model
 
     public function fromDateTime($value): int
     {
-        return $value;
+        return (int) $value;
     }
 
     public function getCreatedAtAttribute()
     {
-        return date('Y-m-d H:i:s', $this->attributes['created_at']);
+        return date('Y-m-d H:i:s', $this->attributes['created_at'] ?? 0);
     }
 
     public function getUpdatedAtAttribute()
     {
-        return date('Y-m-d H:i:s', $this->attributes['updated_at']);
+        return date('Y-m-d H:i:s', $this->attributes['updated_at'] ?? 0);
     }
 
     /**

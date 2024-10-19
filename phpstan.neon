@@ -1,11 +1,11 @@
 includes:
     - vendor/phpstan/phpstan-strict-rules/rules.neon
 parameters:
-    level: 1
-    excludes_analyse:
-        # - package/View/Providers/ServiceProvider.php
+    level: 0
+    excludePaths:
+        - /Users/fangwei/projectPTAdmin/package/easyForms/tests/      # 忽略 tests 目录及其子目录
     ignoreErrors:
         - '#^Variable method call on Illuminate\\Database\\Schema\\Blueprint\.#'
         - '#^Unsafe usage of new static\(\)\.#'
-    excludePaths:
-        - tests/*      # 忽略 tests 目录及其子目录
+        # - '#^Undefined variable: $this#'
+

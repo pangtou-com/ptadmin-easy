@@ -25,9 +25,9 @@ namespace PTAdmin\Easy\Components\Number;
 
 use PTAdmin\Easy\Components\AbstractComponent;
 
-class BigInteger extends AbstractComponent
+class Connect extends AbstractComponent
 {
-    protected $type = 'bigInteger';
+    protected $type = 'hidden';
     protected $number = true;
 
     protected $column_type = 'bigInteger';

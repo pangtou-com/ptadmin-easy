@@ -53,15 +53,26 @@ class ModService
         }
 
         DB::beginTransaction();
+        $extension = ModColumnExtension::getExtension($mod_name);
+        ModColumnExtension::checkExtension($extension);
 
         try {
             $model = new Mod();
             $model->fill($data);
-            $model->mod_name = strtolower($mod_name);
+            $model->mod_name = $mod_name;
             $model->table_name = $data['table_name'];
             $model->intro = $data['intro'] ?? '';
             $model->save();
             TableHandle::createTable($model->table_name);
+
+            // 初始化模型字段信息
+            if (\count($extension) > 0) {
+                $field = new ModFieldService();
+                foreach ($extension as $item) {
+                    $item['mod_id'] = $model->id;
+                    $field->store($item);
+                }
+            }
 
             DB::commit();
         } catch (\Exception $exception) {
@@ -69,16 +80,6 @@ class ModService
             TableHandle::dropTable($data['table_name']);
 
             throw new EasyException($exception->getMessage());
-        }
-
-        try {
-            $this->initialize($model);
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            TableHandle::dropTable($data['table_name']);
-
-            throw new EasyException($e->getMessage());
         }
 
         return $model;
@@ -304,24 +305,6 @@ class ModService
     }
 
     /**
-     * 模型创建后需要初始化模型字段.
-     *
-     * @param Mod $model
-     */
-    protected function initialize(Mod $model): void
-    {
-        $extension = ModColumnExtension::getExtension($model->mod_name);
-        if (0 === \count($extension)) {
-            return;
-        }
-        $field = new ModFieldService();
-        foreach ($extension as $item) {
-            $item['mod_id'] = $model->id;
-            $field->store($item);
-        }
-    }
-
-    /**
      * 验证请求数据是否正确.
      */
     private function validateData(array $data): void
@@ -329,17 +312,19 @@ class ModService
         $rules = [
             'title' => 'required|max:50',
             'table_name' => [
-                'required', 'max:32', 'regex:/^[a-zA-Z][a-zA-Z0-9_]*$/',
+                isset($data['id']) ?: 'required',
+                'max:32', 'regex:/^[a-zA-Z][a-zA-Z0-9_]*$/',
                 Rule::unique((new Mod())->getTable(), 'table_name'),
             ],
             'intro' => 'max:255',
-            'mod_name' => 'required|max:32',
+            'mod_name' => isset($data['id']) ? 'max:32' : 'required|max:32',
             'weight' => 'integer|max:255|min:0',
             'status' => 'integer|max:255|min:0',
         ];
         if (isset($data['id']) && $data['id']) {
             unset($rules['table_name'], $rules['mod_name']);
         }
+
         Validator::make($data, $rules)->validate();
     }
 }
