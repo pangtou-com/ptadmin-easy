@@ -47,11 +47,14 @@ it('【Mod】缺少必填项', function (): void {
 });
 
 it('【Mod】不允许修改表名称', function (): void {
-    $this->expectException(ValidationException::class);
+    $data = ['title' => '测试模块', 'table_name' => 'test_table_'.time(), 'intro' => '测试模块简介'];
+    $mod = Easy::mod()->store($data, $this->modName);
     Easy::mod()->edit([
-        'table_name' => 'test_table_'.time(),
+        'table_name' => 'test_table_1'.time(),
         'intro' => '测试模块简介',
-    ], $this->current_id);
+        'title' => '测试修改名称',
+    ], $mod->id);
+    $this->assertTrue(Mod::query()->where('table_name', $data['table_name'])->exists(), '不允许修改表名');
 });
 
 it('【Mod】编辑内容', function (): void {

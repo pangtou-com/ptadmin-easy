@@ -21,7 +21,24 @@ declare(strict_types=1);
  *  Email:     vip@pangtou.com
  */
 
+beforeEach(function (): void {
+    $this->mod = \PTAdmin\Easy\Easy::mod()->store([
+        'title' => '测试模块',
+        'table_name' => 'test_table_'.time(),
+        'intro' => '测试模块简介',
+    ], 'test');
+});
+
 it('【field】字段新增', function (): void {
+    \PTAdmin\Easy\Easy::field()->store([
+        'mod_id' => $this->mod->id,
+        'name' => 'test_field_'.time(),
+        'title' => '测试字段',
+        'type' => 'text',
+        'default_val' => '默认值',
+        'is_show' => 1,
+    ]);
+
     $this->assertTrue(true);
 });
 
