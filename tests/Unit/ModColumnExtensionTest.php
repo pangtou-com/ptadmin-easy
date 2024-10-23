@@ -24,6 +24,7 @@ declare(strict_types=1);
 use PTAdmin\Easy\Exceptions\InvalidDataException;
 use PTAdmin\Easy\Service\Extensions\ModColumnExtension;
 
+// 字段扩展测试
 beforeEach(function (): void {
     $this->modName = 'test';
 });
@@ -69,9 +70,15 @@ it('【column】插入扩展', function (): void {
 
 it('【column】校验异常', function (): void {
     $extend = ModColumnExtension::getExtension($this->modName);
+
     expect($extend)->toHaveCount(2);
-    $this->expectException(InvalidDataException::class);
-    ModColumnExtension::checkExtension($extend);
+
+    try {
+        ModColumnExtension::checkExtension($extend);
+        $this->assertTrue(false);
+    } catch (InvalidDataException $e) {
+        $this->assertTrue(true);
+    }
 });
 
 it('【column】清理数据', function (): void {

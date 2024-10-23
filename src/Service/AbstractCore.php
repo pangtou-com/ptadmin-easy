@@ -66,16 +66,18 @@ abstract class AbstractCore
      * 构造函数.
      * 传入参数支持： Mod对象、模型ID、模型名称.
      *
-     * @param Mod|string $param
+     * @param int|Mod|string $param
      */
     private function __construct($param)
     {
         if ($param instanceof Mod) {
             $this->mod = $param;
             $this->code = $param->table_name;
-        } elseif (\is_string($param) && 0 !== (int) $param) {
-            $this->mod = Mod::query()->findOrFail($param);
-            $this->code = $this->mod->table_name;
+        } elseif (0 !== (int) $param) {
+            /** @var Mod $mod */
+            $mod = Mod::query()->findOrFail($param);
+            $this->code = $mod->table_name;
+            $this->mod = $mod;
         } elseif (\is_string($param)) {
             $this->code = $param;
         } else {
@@ -108,6 +110,16 @@ abstract class AbstractCore
     public function getModInfo(): array
     {
         return $this->getMod()->toArray();
+    }
+
+    /**
+     * 获取模型表名.
+     *
+     * @return string
+     */
+    public function getModTableName(): string
+    {
+        return $this->getMod()->table_name;
     }
 
     /**
@@ -209,6 +221,18 @@ abstract class AbstractCore
     }
 
     /**
+     * 返回所有字段名称.
+     *
+     * @return array
+     */
+    protected function getFields(): array
+    {
+        $fields = $this->getCacheModField() ?? [];
+
+        return array_column($fields, 'name');
+    }
+
+    /**
      * 初始化规则信息，将模型规则分类解析为：表单、表单验证、搜索等.
      */
     protected function initialize(): void
@@ -294,12 +318,14 @@ abstract class AbstractCore
     protected function parserValidateRule($column, $field): array
     {
         $data = [];
-        if ($field['is_required']) {
+        if (1 === (int) $field['is_required']) {
             $data[] = 'required';
         }
         if ($column->isOption()) {
             $in = data_get($column->getColumnOptions($field['setup']), '*.value');
-            $data[] = 'in:'.implode(',', $in);
+            if (\is_array($in) && \count($in) > 0) {
+                $data[] = 'in:'.implode(',', $in);
+            }
         }
         if ($column->isNumber()) {
             $data[] = 'integer';
@@ -330,6 +356,9 @@ abstract class AbstractCore
             'release' => $field['is_release'],
             'options' => $column->isOption() ? $column->getColumnOptions($field['setup']) : [],
             'setup' => $field['setup'],
+            'validated' => $field['is_required'] ? [
+                'rule' => ['required'],
+            ] : [],
         ];
     }
 }

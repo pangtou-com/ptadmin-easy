@@ -54,9 +54,9 @@ trait ModFormat
     /**
      * 关闭格式化功能.
      *
-     * @return ModFormat|\PTAdmin\Easy\Service\Handler
+     * @return mixed
      */
-    public function cancelFormatting(): self
+    public function cancelFormatting()
     {
         $this->is_format = false;
 
@@ -82,7 +82,7 @@ trait ModFormat
             $data = $callback($data);
         } else {
             // 根据字段类型给每个字段格式化内容
-            // todo 待处理key重复的情况
+            // todo 待处理key可能重复的情况
             foreach ($data as $key => &$item) {
                 $temp = $this->formatField($key, $item, $readOrStore);
                 if ($item !== $temp) {
@@ -93,6 +93,30 @@ trait ModFormat
         }
 
         return $data;
+    }
+
+    /**
+     * 存储数据格式化.
+     *
+     * @param $data
+     *
+     * @return array
+     */
+    protected function saveFormat($data): array
+    {
+        return $this->actionFormat($data, true);
+    }
+
+    /**
+     * 读取数据格式化.
+     *
+     * @param $data
+     *
+     * @return array
+     */
+    protected function readFormat($data): array
+    {
+        return $this->actionFormat($data);
     }
 
     /**

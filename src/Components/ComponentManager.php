@@ -27,6 +27,7 @@ use PTAdmin\Easy\Components\Attachment\Attachment;
 use PTAdmin\Easy\Components\Attachment\Image;
 use PTAdmin\Easy\Components\Attachment\Video;
 use PTAdmin\Easy\Components\Number\Connect;
+use PTAdmin\Easy\Components\Number\Number;
 use PTAdmin\Easy\Components\Select\Checkbox;
 use PTAdmin\Easy\Components\Select\Radio;
 use PTAdmin\Easy\Components\Select\Select;
@@ -64,6 +65,7 @@ class ComponentManager
         'identity' => ['class' => Identity::class, 'label' => '身份证', 'label_key' => 'component.identity'],
         'color' => ['class' => Color::class, 'label' => '色彩', 'label_key' => 'component.color'],
         'editor' => ['class' => Editor::class, 'label' => '编辑器', 'label_key' => 'component.editor'],
+        'number' => ['class' => Number::class, 'label' => '数值组件', 'label_key' => 'component.number'],
 
         // 附件组件
         'attachment' => ['class' => Attachment::class, 'label' => '文件', 'label_key' => 'component.file'],
@@ -205,7 +207,7 @@ class ComponentManager
 
     private function checkInstallComponent($component): void
     {
-        if (!isset($component['class']) || (!isset($component['title']) && !isset($component['label_key']))) {
+        if (!isset($component['class']) || (!isset($component['label']) && !isset($component['label_key']))) {
             throw new EasyException('组件配置错误');
         }
         if (!class_exists($component['class'])) {

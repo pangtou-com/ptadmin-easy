@@ -21,4 +21,4 @@ declare(strict_types=1);
  *  Email:     vip@pangtou.com
  */
 
-uses(\PTAdmin\Easy\Tests\TestCase::class)->in('Feature');
+uses(\PTAdmin\Easy\Tests\TestCase::class)->in('Feature', 'Unit');

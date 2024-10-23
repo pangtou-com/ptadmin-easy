@@ -21,13 +21,14 @@ declare(strict_types=1);
  *  Email:     vip@pangtou.com
  */
 
-namespace PTAdmin\Easy\Service\Traits;
+namespace PTAdmin\Easy\Components\Number;
 
-/**
- * 模型事件处理方式.
- */
-trait ModEvent
+use PTAdmin\Easy\Components\AbstractComponent;
+
+class Number extends AbstractComponent
 {
-    /** @var mixed 所有事件对象事件集合 */
-    protected $events = [];
+    protected $type = 'number';
+    protected $number = true;
+
+    protected $column_type = 'integer';
 }

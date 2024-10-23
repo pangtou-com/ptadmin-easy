@@ -55,7 +55,7 @@ class ModField extends Model
 
     protected $fillable = [
         'title', 'mod_id', 'default_val', 'tips', 'intro', 'is_release', 'is_search', 'is_table',
-        'is_required', 'status', 'weight', 'setup', 'extra',
+        'is_required', 'status', 'weight', 'setup', 'extra', 'is_system',
     ];
 
     protected $dateFormat = 'U';

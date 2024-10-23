@@ -50,7 +50,7 @@ class Handler extends AbstractCore
         }
 
         // 排序处理
-        if (\count($order)) {
+        if (\count($order) > 0) {
             foreach ($order as $key => $val) {
                 if (!\in_array($val, ['asc', 'desc'], true)) {
                     continue;
@@ -84,7 +84,9 @@ class Handler extends AbstractCore
         }
         // 1、参数过滤，只展示存储需要的字段
         // 2、参数转换，需要对特殊格式的参数进行转换
+        $data = $this->saveFormat($data);
         $model = ModelBuild::build($this->code);
+        $model->fillable($this->getFields());
         $model->fill($data);
         $model->save();
 
@@ -92,20 +94,24 @@ class Handler extends AbstractCore
     }
 
     /**
-     * @param mixed $data
-     * @param mixed $id
+     * @param array $data
+     * @param int   $id
+     * @param bool  $isValidate
      *
      * @throws \Illuminate\Validation\ValidationException
+     *
+     * @return bool|int
      */
-    public function edit($data, $id, bool $isValidate = true): int
+    public function edit(array $data, int $id, bool $isValidate = true)
     {
         if ($isValidate) {
             $this->validate($data);
         }
+        $data = $this->saveFormat($data);
+        $model = $this->newQuery()->findOrFail($id);
+        $model->fillable($this->getFields());
 
-        $model = $this->newQuery();
-
-        return $model->where('id', $id)->update($data);
+        return $model->update($data);
     }
 
     public function delete($ids): void
@@ -116,7 +122,7 @@ class Handler extends AbstractCore
     public function show($id)
     {
         return $this->actionFormat(
-            $this->newQuery()->findOrFail($id)
+            $this->newQuery()->findOrFail($id)->toArray()
         );
     }
 

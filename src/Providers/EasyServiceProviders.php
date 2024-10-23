@@ -45,11 +45,11 @@ class EasyServiceProviders extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../../config/easy.php' => config_path('easy.php'),
-            ], 'config');
+            ], 'ptadmin-easy');
 
             $this->publishes([
                 __DIR__.'/../../database/migrations' => database_path('migrations'),
-            ], 'migrations');
+            ], 'ptadmin-easy');
         }
     }
 }

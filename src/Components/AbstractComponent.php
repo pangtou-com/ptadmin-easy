@@ -34,7 +34,10 @@ abstract class AbstractComponent implements IComponent
     /** @var string 组件类型 */
     protected $type;
 
-    /** @var string 字段类型 */
+    /** @var string 组件标题 */
+    protected $label;
+
+    /** @var string 字段存储类型 */
     protected $column_type;
 
     /** @var array 字段新增保存时规则 */
@@ -46,7 +49,7 @@ abstract class AbstractComponent implements IComponent
     /** @var array 数据新增时需要保存的额外数据：如rules、style、class、prop等 */
     protected $setup;
 
-    /** @var array|ModField */
+    /** @var array|ModField 数据模型对象 */
     protected $data;
 
     /** @var bool 是否为选项类型组件 */
@@ -179,6 +182,16 @@ abstract class AbstractComponent implements IComponent
     public function isNumber(): bool
     {
         return $this->number;
+    }
+
+    /**
+     * 获取组件标题.
+     *
+     * @return string
+     */
+    public function getLabel(): string
+    {
+        return $this->label ?? '';
     }
 
     public function getColumnOptions($data)

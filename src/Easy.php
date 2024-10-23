@@ -25,6 +25,7 @@ namespace PTAdmin\Easy;
 
 use PTAdmin\Easy\Components\ComponentManager;
 use PTAdmin\Easy\Exceptions\InvalidDataException;
+use PTAdmin\Easy\Model\Mod;
 use PTAdmin\Easy\Service\Handler;
 use PTAdmin\Easy\Service\ModFieldService;
 use PTAdmin\Easy\Service\ModService;
@@ -61,25 +62,27 @@ class Easy
     /**
      * 获取数据处理对象
      *
-     * @param $table_name
+     * @param int|Mod|string $code  支持传入模型、模型名称、模型ID
+     * @param bool           $force 是否强制更新
      *
      * @return Handler
      */
-    public static function handler($table_name): Handler
+    public static function handler($code, bool $force = false): Handler
     {
-        return Handler::make($table_name);
+        return Handler::make($code, $force);
     }
 
     /**
      * 获取渲染器对象
      *
-     * @param $table_name
+     * @param int|Mod|string $code  支持传入模型、模型名称、模型ID
+     * @param bool           $force 是否强制更新
      *
      * @return Render
      */
-    public static function render($table_name): Render
+    public static function render($code, bool $force = false): Render
     {
-        return Render::make($table_name);
+        return Render::make($code, $force);
     }
 
     /**

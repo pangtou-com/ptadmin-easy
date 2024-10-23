@@ -119,4 +119,11 @@ interface IComponent
      * @return mixed
      */
     public function saveFormat($value);
+
+    /**
+     * 获取组件标题内容.
+     *
+     * @return string
+     */
+    public function getLabel(): string;
 }
