@@ -49,7 +49,7 @@ abstract class TestCase extends Orchestra
         $path = __DIR__.'/../database/migrations/create_mod_and_field.php';
 
         include_once $path;
-        self::$migration = new \create_mod_and_field();
+        self::$migration = new \ModInit();
         self::$migration->up();
     }
 }

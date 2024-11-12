@@ -25,7 +25,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class create_mod_and_field extends Migration
+class ModInit extends Migration
 {
     public function up(): void
     {
