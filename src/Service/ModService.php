@@ -3,22 +3,14 @@
 declare(strict_types=1);
 
 /**
- *  PTAdmin
  *  ============================================================================
- *  版权所有 2022-2024 重庆胖头网络技术有限公司，并保留所有权利。
- *  网站地址: https://www.pangtou.com
- *  ----------------------------------------------------------------------------
- *  尊敬的用户，
- *     感谢您对我们产品的关注与支持。我们希望提醒您，在商业用途中使用我们的产品时，请务必前往官方渠道购买正版授权。
- *  购买正版授权不仅有助于支持我们不断提供更好的产品和服务，更能够确保您在使用过程中不会引起不必要的法律纠纷。
- *  正版授权是保障您合法使用产品的最佳方式，也有助于维护您的权益和公司的声誉。我们一直致力于为客户提供高质量的解决方案，并通过正版授权机制确保产品的可靠性和安全性。
- *  如果您有任何疑问或需要帮助，我们的客户服务团队将随时为您提供支持。感谢您的理解与合作。
- *  诚挚问候，
- *  【重庆胖头网络技术有限公司】
+ *  ******************************【PTAdmin/Easy】******************************
  *  ============================================================================
- *  Author:    Zane
- *  Homepage:  https://www.pangtou.com
- *  Email:     vip@pangtou.com
+ *  Copyright (c) 2022-2025 【重庆胖头网络技术有限公司】，并保留所有权利。
+ *  ============================================================================
+ *  站点首页:  https://www.pangtou.com
+ *  文档地址:  https://docs.pangtou.com
+ *  联系邮箱:  vip@pangtou.com
  */
 
 namespace PTAdmin\Easy\Service;
@@ -38,28 +30,28 @@ class ModService
     /**
      * 新增模型.
      *
-     * @param array  $data     模型数据
-     * @param string $mod_name 模型类型
+     * @param array  $data 模型数据
+     * @param string $mod  模型类型
      *
      * @see https://docs.pangtou.com/docs/easy-forms/mod.html
      *
      * @return Mod
      */
-    public function store(array $data, string $mod_name): Mod
+    public function store(array $data, string $mod): Mod
     {
-        $this->validateData(array_merge($data, ['mod_name' => $mod_name]));
+        $this->validateData(array_merge($data, ['mod' => $mod]));
         if (TableHandle::tableExists($data['table_name'])) {
             throw new EasyException("【{$data['table_name']}】表名已存在");
         }
 
         DB::beginTransaction();
-        $extension = ModColumnExtension::getExtension($mod_name);
+        $extension = ModColumnExtension::getExtension($mod);
         ModColumnExtension::checkExtension($extension);
 
         try {
             $model = new Mod();
             $model->fill($data);
-            $model->mod_name = $mod_name;
+            $model->mod = $mod;
             $model->table_name = $data['table_name'];
             $model->intro = $data['intro'] ?? '';
             $model->save();
@@ -89,11 +81,11 @@ class ModService
      * 批量处理.【待完成】.
      *
      * @param $data
-     * @param $mod_name
+     * @param $mod
      */
-    public function saves($data, $mod_name): void
+    public function saves($data, $mod): void
     {
-        $model = isset($data['id']) ? $this->edit($data, $data['id']) : $this->store($data, $mod_name);
+        $model = isset($data['id']) ? $this->edit($data, $data['id']) : $this->store($data, $mod);
         $results = $data['results'] ?? [];
         $names = data_get($results, '*.name', []);
         $model->field()->get()->each(function ($item) use ($names): void {
@@ -176,15 +168,15 @@ class ModService
 
     /**
      * @param mixed       $search
-     * @param null|string $mod_name 模块类型
+     * @param null|string $mod    模块类型
      *
      * @return array
      */
-    public function lists(array $search = [], string $mod_name = null): array
+    public function lists(array $search = [], string $mod = null): array
     {
         $filterMap = Mod::query();
-        if (null !== $mod_name) {
-            $filterMap->where('mod_name', $mod_name);
+        if (null !== $mod) {
+            $filterMap->where('mod', $mod);
         }
         if (isset($search['recycle']) && 1 === (int) $search['recycle']) {
             $filterMap = $filterMap->onlyTrashed();
@@ -221,14 +213,14 @@ class ModService
     /**
      * 通过模块名称获取模型.
      *
-     * @param $mod_name
+     * @param $module
      *
      * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
      */
-    public function byModName($mod_name)
+    public function byModule($module)
     {
         $filterMap = Mod::query();
-        $filterMap->where('mod_name', $mod_name);
+        $filterMap->where('module', $module);
 
         return $filterMap->get();
     }
@@ -291,20 +283,6 @@ class ModService
     }
 
     /**
-     * 预览模型.
-     *
-     * @param $id
-     *
-     * @return \Illuminate\Contracts\View\View
-     */
-    public function preview($id): \Illuminate\Contracts\View\View
-    {
-        $mod = Mod::query()->findOrFail($id);
-
-        return Render::make($mod, true)->toPreviewFormHtml();
-    }
-
-    /**
      * 验证请求数据是否正确.
      */
     private function validateData(array $data): void
@@ -317,12 +295,12 @@ class ModService
                 Rule::unique((new Mod())->getTable(), 'table_name'),
             ],
             'intro' => 'max:255',
-            'mod_name' => isset($data['id']) ? 'max:32' : 'required|max:32',
+            'module' => isset($data['id']) ? 'max:32' : 'required|max:32',
             'weight' => 'integer|max:255|min:0',
             'status' => 'integer|max:255|min:0',
         ];
         if (isset($data['id']) && $data['id']) {
-            unset($rules['table_name'], $rules['mod_name']);
+            unset($rules['table_name'], $rules['module']);
         }
 
         Validator::make($data, $rules)->validate();

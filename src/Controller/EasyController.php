@@ -13,13 +13,13 @@ declare(strict_types=1);
  *  联系邮箱:  vip@pangtou.com
  */
 
-return [
-    'cache' => [
-        // 缓存key
-        'key' => '__ptadmin.easy.cache__',
-        // 缓存驱动
-        'store' => 'file',
-        // 缓存过期时间默认为30天
-        'expiration_time' => \DateInterval::createFromDateString('30 days'),
-    ],
-];
+namespace PTAdmin\Easy\Controller;
+
+class EasyController
+{
+    public function handle(): \Illuminate\Http\JsonResponse
+    {
+        return response()->json([
+        ]);
+    }
+}

@@ -54,6 +54,7 @@ class ModFieldService
             $filterMap->fill($data);
             $filterMap->name = strtolower($data['name']);
             $filterMap->type = $data['type'];
+            $filterMap->mod_id = $data['mod_id'];
             $filterMap->setup = $setup;
             $filterMap->save();
 
@@ -86,6 +87,7 @@ class ModFieldService
             /** @var ModField $model */
             $model = ModField::query()->findOrFail($id);
             $model->fill($data);
+
             $model->setup = $setup;
             $model->save();
 
@@ -246,7 +248,7 @@ class ModFieldService
             'status' => 'integer|max:255|min:0',
         ];
         if (isset($data['id']) && $data['id']) {
-            unset($rules['mod_id']);
+            unset($rules['mod_id'], $rules['type'], $rules['name']);
         }
         Validator::make($data, $rules)->validate();
     }

@@ -54,7 +54,7 @@ class ModField extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'mod_id', 'default_val', 'tips', 'intro', 'is_release', 'is_search', 'is_table',
+        'title', 'default_val', 'tips', 'intro', 'is_release', 'is_search', 'is_table',
         'is_required', 'status', 'weight', 'setup', 'extra', 'is_system',
     ];
 
