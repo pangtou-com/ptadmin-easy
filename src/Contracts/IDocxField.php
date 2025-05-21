@@ -68,20 +68,22 @@ interface IDocxField
     /**
      * 读取组件可变属性值，.
      *
-     * @param mixed $val 要转化的数据
+     * @param mixed $val   要转化的数据
+     * @param mixed $model
      *
      * @return mixed
      */
-    public function getComponentAttributeValue($val);
+    public function getComponentAttributeValue($model, $val);
 
     /**
      * 设置组件可变属性值.
      *
      * @param $val
+     * @param mixed $model
      *
      * @return mixed
      */
-    public function setComponentAttributeValue($val);
+    public function setComponentAttributeValue($model, $val);
 
     /**
      * 字段默认值

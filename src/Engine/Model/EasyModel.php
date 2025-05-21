@@ -50,7 +50,7 @@ class EasyModel extends Model
     public function setAttribute($key, $value)
     {
         if (null !== $this->document) {
-            $value = $this->document->setMutatedAttributeValue($key, $value);
+            $value = $this->document->setMutatedAttributeValue($this, $key, $value);
         }
 
         return parent::setAttribute($key, $value);
@@ -60,7 +60,7 @@ class EasyModel extends Model
     {
         $value = parent::getAttribute($key);
         if (null !== $this->document) {
-            $value = $this->document->getMutatedAttributeValue($key, $value);
+            $value = $this->document->getMutatedAttributeValue($this, $key, $value);
         }
 
         return $value;

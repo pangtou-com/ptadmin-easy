@@ -144,21 +144,19 @@ class DocxField implements IDocxField
         return $rules;
     }
 
-    public function getComponentAttributeValue($val)
+    public function getComponentAttributeValue($model, $val)
     {
         if ($this->hasGetMutator()) {
-            // @phpstan-ignore-next-line
-            return $this->{$this->getGetMutatorMethod()}($val);
+            return \call_user_func_array([$this, $this->getGetMutatorMethod()], [$val, $model]);
         }
 
         return $val;
     }
 
-    public function setComponentAttributeValue($val)
+    public function setComponentAttributeValue($model, $val)
     {
         if ($this->hasSetMutator()) {
-            // @phpstan-ignore-next-line
-            return $this->{$this->getSetMutatorMethod()}($val);
+            return \call_user_func_array([$this, $this->getSetMutatorMethod()], [$val, $model]);
         }
 
         return $val;

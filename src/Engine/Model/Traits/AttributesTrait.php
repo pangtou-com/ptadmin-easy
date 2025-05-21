@@ -24,14 +24,15 @@ trait AttributesTrait
      *
      * @param $key
      * @param $val
+     * @param mixed $model
      *
      * @return mixed
      */
-    public function setMutatedAttributeValue($key, $val)
+    public function setMutatedAttributeValue($model, $key, $val)
     {
         $field = $this->docx->getField($key);
         if (null !== $field) {
-            $val = $field->setComponentAttributeValue($val);
+            $val = $field->setComponentAttributeValue($model, $val);
         }
         $control = $this->getControl();
         if (null === $control) {
@@ -50,12 +51,13 @@ trait AttributesTrait
      *
      * @param mixed $key
      * @param mixed $val
+     * @param mixed $model
      */
-    public function getMutatedAttributeValue($key, $val)
+    public function getMutatedAttributeValue($model, $key, $val)
     {
         $field = $this->docx->getField($key);
         if (null !== $field) {
-            $val = $field->getComponentAttributeValue($val);
+            $val = $field->getComponentAttributeValue($model, $val);
         }
         $control = $this->getControl();
         if (null === $control) {
@@ -100,13 +102,14 @@ trait AttributesTrait
      * 设置属性值.
      *
      * @param mixed $data
+     * @param mixed $model
      *
      * @return mixed
      */
-    protected function setAttributeValue($data)
+    protected function setAttributeValue($model, $data)
     {
         foreach ($data as $key => &$value) {
-            $value = $this->setMutatedAttributeValue($key, $value);
+            $value = $this->setMutatedAttributeValue($model, $key, $value);
         }
         unset($value);
 

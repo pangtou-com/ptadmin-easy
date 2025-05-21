@@ -35,4 +35,46 @@ trait SelectComponentTrait
 
         return 'in:'.implode(',', $this->getOptionRules());
     }
+
+    protected function getSelectAttribute($value)
+    {
+        if ($this->isMultiple()) {
+            return $this->getCheckboxAttribute($value);
+        }
+
+        return $value;
+    }
+
+    protected function setSelectAttribute($value): ?string
+    {
+        if ($this->isMultiple()) {
+            return $this->setCheckboxAttribute($value);
+        }
+
+        return $value;
+    }
+
+    protected function getCheckboxAttribute($value)
+    {
+        if (null === $value) {
+            return null;
+        }
+        if (\is_array($value)) {
+            return $value;
+        }
+
+        return explode(',', trim($value, ','));
+    }
+
+    protected function setCheckboxAttribute($value): ?string
+    {
+        if (null === $value) {
+            return null;
+        }
+        if (\is_array($value)) {
+            return ','.implode(',', $value).',';
+        }
+
+        return ','.trim($value, ',').',';
+    }
 }
