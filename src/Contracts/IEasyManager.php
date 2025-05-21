@@ -13,8 +13,14 @@ declare(strict_types=1);
  *  联系邮箱:  vip@pangtou.com
  */
 
-namespace PTAdmin\Easy\Exceptions;
+namespace PTAdmin\Easy\Contracts;
 
-class InvalidDataException extends \RuntimeException
+interface IEasyManager
 {
+    /**
+     * 是否为开发模式.
+     *
+     * @return bool
+     */
+    public function isDevelop(): bool;
 }

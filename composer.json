@@ -31,7 +31,10 @@
     "autoload": {
         "psr-4": {
             "PTAdmin\\Easy\\": "src/"
-        }
+        },
+        "files": [
+            "src/Utils/Helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

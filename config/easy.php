@@ -14,12 +14,5 @@ declare(strict_types=1);
  */
 
 return [
-    'cache' => [
-        // 缓存key
-        'key' => '__ptadmin.easy.cache__',
-        // 缓存驱动
-        'store' => 'file',
-        // 缓存过期时间默认为30天
-        'expiration_time' => \DateInterval::createFromDateString('30 days'),
-    ],
+    'cache_path' => base_path('/bootstrap/cache'),
 ];

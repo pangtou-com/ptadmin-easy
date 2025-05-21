@@ -13,8 +13,17 @@ declare(strict_types=1);
  *  联系邮箱:  vip@pangtou.com
  */
 
-namespace PTAdmin\Easy\Exceptions;
+namespace PTAdmin\Easy\Commands;
 
-class InvalidDataException extends \RuntimeException
+use Illuminate\Console\Command;
+
+class EasyInit extends Command
 {
+    protected $signature = 'easy:init';
+    protected $description = '项目初始化';
+
+    public function handle(): int
+    {
+        return 0;
+    }
 }

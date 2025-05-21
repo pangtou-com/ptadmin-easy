@@ -15,6 +15,9 @@ hero:
     - theme: alt
       text: Gitee
       link: https://gitee.com/ptadmin/ptadmin-easy
+    - theme: alt
+      text: Github
+      link: https://github.com/pangtou-com/ptadmin-easy
 
 features:
   - title: 轻松构建

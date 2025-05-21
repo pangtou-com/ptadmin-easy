@@ -13,8 +13,8 @@ declare(strict_types=1);
  *  联系邮箱:  vip@pangtou.com
  */
 
-namespace PTAdmin\Easy\Exceptions;
+// 组件测试
 
-class InvalidDataException extends \RuntimeException
-{
-}
+it('Component Test', function (): void {
+    expect(1)->toHaveCount(1);
+});

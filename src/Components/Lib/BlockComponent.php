@@ -13,8 +13,14 @@ declare(strict_types=1);
  *  联系邮箱:  vip@pangtou.com
  */
 
-namespace PTAdmin\Easy\Exceptions;
+namespace PTAdmin\Easy\Components\Lib;
 
-class InvalidDataException extends \RuntimeException
+use PTAdmin\Easy\Components\AbstractComponent;
+
+class BlockComponent extends AbstractComponent
 {
+    public function isVirtual(): bool
+    {
+        return true;
+    }
 }

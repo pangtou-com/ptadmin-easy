@@ -13,8 +13,16 @@ declare(strict_types=1);
  *  联系邮箱:  vip@pangtou.com
  */
 
-namespace PTAdmin\Easy\Exceptions;
+namespace PTAdmin\Easy\Components\Lib;
 
-class InvalidDataException extends \RuntimeException
+use PTAdmin\Easy\Components\AbstractComponent;
+
+class AutoComponent extends AbstractComponent
 {
+    protected $column_type = 'string';
+
+    public function getColumnArguments(): array
+    {
+        return [$this->filed->getName(), 30];
+    }
 }

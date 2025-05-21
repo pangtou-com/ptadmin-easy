@@ -28,9 +28,6 @@ class ModInit extends Migration
             $table->string('parent_table_name', 50)->nullable()->comment('父级表名称');
             $table->string('module', 50)->comment('所属模块名称');
             $table->string('intro', 255)->nullable()->comment('描述信息');
-            $table->text('content')->nullable()->comment('内容');
-            $table->string('app', 140)->nullable()->comment('所属应用名称');
-            $table->string('search_fields', 255)->nullable()->comment('搜索字段集合');
             $table->string('auto_name', 140)->nullable()->comment('自动名称');
             $table->string('naming_rule', 140)->nullable()->comment('自动名称：命名规则');
             $table->string('title_field', 140)->nullable()->comment('标题字段');
@@ -54,7 +51,7 @@ class ModInit extends Migration
             $table->unsignedTinyInteger('allow_copy')->default(0)->comment('是否允许拷贝');
             $table->unsignedTinyInteger('allow_rename')->default(1)->comment('是否重命名');
             $table->unsignedTinyInteger('allow_recycle')->default(1)->comment('是否支持回收站');
-            $table->unsignedTinyInteger('track_changes')->default(0)->comment('是否记录修改记录');
+            $table->unsignedTinyInteger('track_changes')->default(0)->comment('是否跟踪修改记录');
             $table->unsignedTinyInteger('status')->default(0)->comment('是否已经使用，0：未使用，1:已使用	');
             $table->unsignedInteger('deleted_at')->nullable()->comment('删除时间');
             $table->unsignedInteger('created_at')->default(0)->comment('创建时间');
@@ -71,18 +68,24 @@ class ModInit extends Migration
             $table->string('default_val', 50)->nullable()->comment('默认值');
             $table->string('tips', 255)->nullable()->comment('描述信息');
             $table->string('intro', 255)->nullable()->comment('描述信息');
-            $table->unsignedTinyInteger('is_release')->default(0);
-            $table->unsignedTinyInteger('is_search')->default(0);
-            $table->unsignedTinyInteger('is_table')->default(0);
-            $table->unsignedTinyInteger('is_required')->default(0);
-            $table->unsignedTinyInteger('is_system')->default(0)->comment('系统字段，不允许删除和修改');
+            $table->unsignedInteger('length')->default(0)->comment('字段长度');
+            $table->unsignedTinyInteger('is_release')->default(0)->comment('用户投稿');
+            $table->unsignedTinyInteger('is_search')->default(0)->comment('搜索');
+            $table->unsignedTinyInteger('is_table')->default(0)->comment('列表展示');
+            $table->unsignedTinyInteger('is_export')->default(0)->comment('是否支持字段导出');
+            $table->unsignedTinyInteger('is_import')->default(0)->comment('是否支持字段导入');
+            $table->unsignedTinyInteger('is_required')->default(0)->comment('是否必填');
+            $table->unsignedTinyInteger('is_unique')->default(0)->comment('是否唯一');
+            $table->unsignedTinyInteger('is_edit')->default(0)->comment('是否允许编辑，对字段类型等编辑修改');
             $table->json('setup')->nullable()->comment('表单构建扩展信息如：style、class等');
+            $table->json('rules')->nullable()->comment('字段规则');
             $table->json('extra')->nullable()->comment('扩展字段信息');
             $table->unsignedTinyInteger('weight')->default(99)->comment('权重');
             $table->unsignedTinyInteger('status')->default(0)->comment('是否已经使用，0：未使用，1:已使用	');
             $table->unsignedInteger('deleted_at')->nullable()->comment('删除时间');
             $table->unsignedInteger('created_at')->default(0)->comment('创建时间');
             $table->unsignedInteger('updated_at')->default(0)->comment('更新时间');
+            // $table->text('options');
         });
 
         app('cache')->store('default' !== config('easy.cache.store') ? config('easy.cache.store') : null)->forget(config('easy.cache.key'));

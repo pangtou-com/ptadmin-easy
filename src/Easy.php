@@ -6,7 +6,7 @@ declare(strict_types=1);
  *  ============================================================================
  *  ******************************【PTAdmin/Easy】******************************
  *  ============================================================================
- *  Copyright (c) 2022-2025 【重庆胖头网络技术有限公司】，并保留所有权利。
+ *  Copyright (c) 2022-2025 【重庆胖头网络技术有限公司】。
  *  ============================================================================
  *  站点首页:  https://www.pangtou.com
  *  文档地址:  https://docs.pangtou.com
@@ -15,61 +15,30 @@ declare(strict_types=1);
 
 namespace PTAdmin\Easy;
 
-use PTAdmin\Easy\Components\ComponentManager;
-use PTAdmin\Easy\Exceptions\InvalidDataException;
-use PTAdmin\Easy\Model\Mod;
-use PTAdmin\Easy\Service\Handler;
-use PTAdmin\Easy\Service\ModFieldService;
-use PTAdmin\Easy\Service\ModService;
+use Illuminate\Support\Facades\Facade;
+use PTAdmin\Easy\Components\Component;
+use PTAdmin\Easy\Contracts\IDocx;
+use PTAdmin\Easy\Contracts\IEasyManager;
+use PTAdmin\Easy\Engine\Model\Document;
+use PTAdmin\Easy\Engine\Schema\Schema;
 
 /**
- * @method static ModService mod()        模块管理对象
- * @method static ModFieldService field() 模块字段对象
+ * @method static IDocx docx(string $docx, string $module = '')        文档对象
+ * @method static Schema schema($docx, string $module = "")            数据表处理对象，用于新增表结构，更新表结构，删除表结构等
+ * @method static bool hasDocx(string $docx)                           文档是否存在
+ * @method static Component component()                                组件管理器
+ * @method static mixed hooks()                                        事件处理钩子对象
+ * @method static Document document(string $docx, string $module = '') 文档模型
+ * @method static mixed charts(string $docx)                           统计模块
+ * @method static bool isDevelop()                                     是否为开发模式
  *
- * @see https://docs.pangtou.com/docs/easy-forms
+ * @see IEasyManager
+ * @see 文档地址 https://docs.pangtou.com/easy-forms
  */
-class Easy
+class Easy extends Facade
 {
-    private static $handler = [
-        'mod' => ModService::class,
-        'field' => ModFieldService::class,
-    ];
-
-    /**
-     * @param mixed $name
-     * @param mixed $arguments
-     *
-     * @throws InvalidDataException
-     */
-    public static function __callStatic($name, $arguments)
+    public static function getFacadeAccessor(): string
     {
-        if (!isset(self::$handler[$name])) {
-            throw new InvalidDataException("【{$name}】未定义");
-        }
-
-        return new self::$handler[$name](...$arguments);
-    }
-
-    /**
-     * 获取数据处理对象
-     *
-     * @param int|Mod|string $code  支持传入模型、模型名称、模型ID
-     * @param bool           $force 是否强制更新
-     *
-     * @return Handler
-     */
-    public static function handler($code, bool $force = false): Handler
-    {
-        return Handler::make($code, $force);
-    }
-
-    /**
-     * 获取组件选项类型.
-     *
-     * @return array
-     */
-    public static function getComponentsOptions(): array
-    {
-        return ComponentManager::getComponentOptions();
+        return 'easy';
     }
 }
