@@ -55,9 +55,9 @@ class Component
 
         // 文件类型组件
         'file' => ['class' => FileComponent::class, 'label' => '单文件上传', 'group' => 'file'],
-        'files' => ['class' => FileComponent::class, 'label' => '多文件上传', 'group' => 'file'],
-        'image' => ['class' => FileComponent::class, 'label' => '图片', 'group' => 'file'],
-        'images' => ['class' => FileComponent::class, 'label' => '多图片上传', 'group' => 'file'],
+        //        'files' => ['class' => FileComponent::class, 'label' => '多文件上传', 'group' => 'file'],
+        //        'image' => ['class' => FileComponent::class, 'label' => '图片', 'group' => 'file'],
+        //        'images' => ['class' => FileComponent::class, 'label' => '多图片上传', 'group' => 'file'],
 
         // 选项类型组件
         'radio' => ['class' => SelectComponent::class, 'label' => '单选框', 'group' => 'select', 'append' => true, 'relation' => true],
@@ -73,7 +73,7 @@ class Component
         'block' => ['class' => BlockComponent::class, 'label' => '功能块', 'group' => 'func'],
         'link' => ['class' => LinkComponent::class, 'label' => '链接表', 'group' => 'func', 'append' => true, 'relation' => true],
         'json' => ['class' => JsonComponent::class, 'label' => 'Json', 'group' => 'func'],
-        'table' => ['class' => JsonComponent::class, 'label' => 'Json', 'group' => 'func', 'relation' => true],
+        'table' => ['class' => JsonComponent::class, 'label' => '表格', 'group' => 'func', 'relation' => true],
         'mirror' => ['class' => JsonComponent::class, 'label' => '镜像数据', 'group' => 'func'],
         'clone' => ['class' => JsonComponent::class, 'label' => '克隆数据', 'group' => 'func'],
     ];
