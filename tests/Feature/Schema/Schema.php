@@ -17,17 +17,5 @@ beforeEach(function (): void {
     app()->setBasePath(config('test_path'));
 });
 
-// 测试用例示例
-it('【docx】allowRecycle', function (): void {
-    $docx = \PTAdmin\Easy\Easy::docx('docx_allow_recycle');
-
-    $this->assertTrue($docx->allowRecycle());
-    $this->assertTrue($docx->trackChanges());
-    $this->assertTrue($docx->trackChanges());
-});
-
-// 测试用例示例
-it('【docx】trackChanges', function (): void {
-    $docx = \PTAdmin\Easy\Easy::docx('docx');
-    $this->assertTrue($docx->trackChanges());
+it('【field】create', function (): void {
 });

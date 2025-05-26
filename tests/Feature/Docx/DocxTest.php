@@ -13,7 +13,6 @@ declare(strict_types=1);
  *  联系邮箱:  vip@pangtou.com
  */
 
-it('【field】字段新增', function (): void {
-    $path = base_path('tests/Fixtures/sample.json');
-    dd(dirname(__DIR__, 2));
+it('【docx】字段新增', function (): void {
+
 });

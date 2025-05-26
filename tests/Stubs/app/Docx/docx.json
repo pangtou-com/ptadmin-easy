@@ -3,7 +3,7 @@
     "module": "core",
     "table_name": "docx",
     "intro": "文档管理主表，用于管理所有的文档基础信息",
-    "allow_recycle": 1,
+    "allow_recycle": 0,
     "is_tree": 1,
     "charts":[
         {
