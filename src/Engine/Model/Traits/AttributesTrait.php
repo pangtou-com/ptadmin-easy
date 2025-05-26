@@ -31,9 +31,10 @@ trait AttributesTrait
     public function setMutatedAttributeValue($model, $key, $val)
     {
         $field = $this->docx->getField($key);
-        if (null !== $field) {
-            $val = $field->setComponentAttributeValue($model, $val);
+        if (null === $field) {
+            return $val;
         }
+        $val = $field->setComponentAttributeValue($model, $val);
         $control = $this->getControl();
         if (null === $control) {
             return $val;
@@ -56,9 +57,10 @@ trait AttributesTrait
     public function getMutatedAttributeValue($model, $key, $val)
     {
         $field = $this->docx->getField($key);
-        if (null !== $field) {
-            $val = $field->getComponentAttributeValue($model, $val);
+        if (null === $field) {
+            return $val;
         }
+        $val = $field->getComponentAttributeValue($model, $val);
         $control = $this->getControl();
         if (null === $control) {
             return $val;

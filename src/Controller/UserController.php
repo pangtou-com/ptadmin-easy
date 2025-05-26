@@ -19,4 +19,6 @@ class UserController extends EasyController
 {
     protected $docx = 'users';
     protected $module = '__easy__';
+
+
 }

@@ -89,6 +89,7 @@ interface IDocxField
      * 字段默认值
      */
     public function getDefault();
+    public function required(): ?string;
 
     /**
      * 获取元数据.

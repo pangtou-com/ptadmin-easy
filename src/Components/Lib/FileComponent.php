@@ -33,6 +33,6 @@ class FileComponent extends AbstractComponent
 
     private function isSingle(): bool
     {
-        return 1 === (int) $this->filed->getMetadata('limit', 1);
+        return 1 === (int) $this->filed->getMetadata('extends.limit', 1);
     }
 }

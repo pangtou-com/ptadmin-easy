@@ -20,6 +20,7 @@ use PTAdmin\Easy\Easy;
 
 abstract class EasyController
 {
+
     protected $docx;
     protected $module;
 

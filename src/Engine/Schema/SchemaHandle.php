@@ -66,6 +66,8 @@ trait SchemaHandle
             }
             $table->integer(Model::CREATED_AT)->unsigned()->default(0);
             $table->integer(Model::UPDATED_AT)->unsigned()->default(0);
+
+            $table->engine = 'InnoDB';
         });
     }
 
@@ -90,6 +92,7 @@ trait SchemaHandle
             return;
         }
         $column = $table->{$component->getColumnType()}(...$component->getColumnArguments());
+
         if (null === $field->required()) {
             $column->nullable();
         }

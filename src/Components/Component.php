@@ -55,9 +55,9 @@ class Component
 
         // 文件类型组件
         'file' => ['class' => FileComponent::class, 'label' => '单文件上传', 'group' => 'file'],
-        //        'files' => ['class' => FileComponent::class, 'label' => '多文件上传', 'group' => 'file'],
-        //        'image' => ['class' => FileComponent::class, 'label' => '图片', 'group' => 'file'],
-        //        'images' => ['class' => FileComponent::class, 'label' => '多图片上传', 'group' => 'file'],
+        'files' => ['class' => FileComponent::class, 'label' => '多文件上传', 'group' => 'file'],
+        'image' => ['class' => FileComponent::class, 'label' => '图片', 'group' => 'file'],
+        'images' => ['class' => FileComponent::class, 'label' => '多图片上传', 'group' => 'file'],
 
         // 选项类型组件
         'radio' => ['class' => SelectComponent::class, 'label' => '单选框', 'group' => 'select', 'append' => true, 'relation' => true],

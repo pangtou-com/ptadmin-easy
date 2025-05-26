@@ -90,7 +90,11 @@ class EasyModel extends Model
 
     public function attributesToArray(): array
     {
-        $attributes = parent::attributesToArray();
+        $attributes = $this->getArrayableAttributes();
+        foreach ($attributes as $key => $value) {
+            $attributes[$key] = $this->getAttribute($key);
+        }
+
         foreach ($this->getEasyAppends() as $key => $val) {
             $attributes[$key] = $this->getAppendValue($key);
         }
@@ -142,6 +146,31 @@ class EasyModel extends Model
         }
 
         return $this->docx->getFillable();
+    }
+
+    public function getCreatedAtAttribute($value)
+    {
+        if (0 === (int)$value) {
+            return '';
+        }
+        return date('Y-m-d H:i:s', $value);
+
+    }
+
+    public function getUpdatedAtAttribute($value)
+    {
+        if (0 === (int)$value) {
+            return '';
+        }
+        return date('Y-m-d H:i:s', $value);
+    }
+
+    public function getDeletedAtAttribute($value)
+    {
+        if (0 === (int)$value) {
+            return '';
+        }
+        return date('Y-m-d H:i:s', $value);
     }
 
     /**

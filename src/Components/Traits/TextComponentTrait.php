@@ -39,18 +39,18 @@ trait TextComponentTrait
         return ['min:'.$min, 'max:'.$length];
     }
 
-    protected function getEmailRule(): string
+    protected function getEmailRule(): array
     {
         $length = $this->getMetadata('length', 255);
 
-        return 'email|max:'.$length;
+        return ['email','max:'.$length];
     }
 
-    protected function getUrlRule(): string
+    protected function getUrlRule(): array
     {
         $length = $this->getMetadata('length', 255);
 
-        return 'url|max:'.$length;
+        return ['url','max:'.$length];
     }
 
     protected function getColorRule(): string
@@ -65,5 +65,20 @@ trait TextComponentTrait
         $length = $this->getMetadata('length', 255);
 
         return 'max:'.$length;
+    }
+
+    protected function getDateRule(): array
+    {
+        return ['date'];
+    }
+
+    protected function getDatetimeRule(): array
+    {
+        return ['date'];
+    }
+
+    protected function getAmountRule(): array
+    {
+        return ['numeric'];
     }
 }

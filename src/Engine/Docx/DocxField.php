@@ -256,7 +256,7 @@ class DocxField implements IDocxField
      *
      * @return null|string
      */
-    protected function required(): ?string
+    public function required(): ?string
     {
         if (1 === (int) $this->getMetadata('is_required', 0)) {
             return 'required';
