@@ -103,8 +103,6 @@ trait LoaderTrait
      */
     public function loadThroughCache(string $docx): self
     {
-        dd($docx);
-
         return $this;
     }
 }

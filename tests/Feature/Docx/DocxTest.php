@@ -13,4 +13,7 @@ declare(strict_types=1);
  *  联系邮箱:  vip@pangtou.com
  */
 
-uses(\PTAdmin\Easy\Tests\TestCase::class)->in('Feature', 'Unit');
+it('【field】字段新增', function (): void {
+    $path = base_path('tests/Fixtures/sample.json');
+    dd(dirname(__DIR__, 2));
+});
