@@ -2,8 +2,11 @@ includes:
     - vendor/phpstan/phpstan-strict-rules/rules.neon
 parameters:
     level: 0
+    paths:
+        - src
     excludePaths:
-        - ./tests/      # 忽略 tests 目录及其子目录
+        - tests/*
+        - **/tests/*
     ignoreErrors:
         - '#^Variable method call on Illuminate\\Database\\Schema\\Blueprint\.#'
         - '#^Unsafe usage of new static\(\)\.#'
