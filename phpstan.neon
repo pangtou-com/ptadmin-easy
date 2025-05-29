@@ -3,7 +3,7 @@ includes:
 parameters:
     level: 0
     excludePaths:
-        - /Users/fangwei/projectPTAdmin/package/easyForms/tests/      # 忽略 tests 目录及其子目录
+        - ./tests/      # 忽略 tests 目录及其子目录
     ignoreErrors:
         - '#^Variable method call on Illuminate\\Database\\Schema\\Blueprint\.#'
         - '#^Unsafe usage of new static\(\)\.#'
