@@ -33,13 +33,13 @@ class SelectComponent extends AbstractComponent
             array_shift($args);
             array_unshift($args, $this->filed->getName());
 
-            return $args;
+            return array_values($args);
         }
         if (null !== $this->args && \count($this->args) > 0) {
             $args = $this->args;
             array_unshift($args, $this->filed->getName());
 
-            return $args;
+            return array_values($args);
         }
 
         return [$this->filed->getName(), false, true];

@@ -23,7 +23,7 @@ use PTAdmin\Easy\Engine\Model\Document;
 use PTAdmin\Easy\Engine\Schema\Schema;
 
 /**
- * @method static IDocx docx(string $docx, string $module = '')        文档对象
+ * @method static IDocx docx(string|array $docx, string $module = '')        文档对象
  * @method static Schema schema($docx, string $module = "")            数据表处理对象，用于新增表结构，更新表结构，删除表结构等
  * @method static bool hasDocx(string $docx)                           文档是否存在
  * @method static Component component()                                组件管理器

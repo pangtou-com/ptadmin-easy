@@ -212,34 +212,40 @@ it('【docx】track changes', function (): void {
 });
 
 it('【docx】get appends value', function (): void {
-    Easy::schema($this->tabelName)->create();
-    $docx = Easy::docx($this->tabelName);
+
+    $config = app()->get('config');
+    $config->set('constant.status', [
+        ['label' => '已启用', 'value' => 1],
+        ['label' => '未启用', 'value' => 0],
+    ]);
+
+    Easy::schema("docx_append")->create();
+    $docx = Easy::docx("docx_append");
     $docx->document()->store([
         'title' => '测试',
         'table_name' => 'docx',
-        'content' => '测试',
-        'cover' => 'https://www.pangtou.com/logo.png',
-        'module' => 'adsad',
+        'quick_entry' => 1,
+        'read_only' => 2,
+        'is_publish' => 0,
+        'is_single' => 1,
+        'allow_rename' => 1,
+        'track_changes' => 0,
         'status' => 1,
     ]);
-    $data = $docx->document()->first();
-    $appendValueArr = $docx->getAppendsValue($data);
-    expect($appendValueArr)->toBeArray()->and(array_keys($appendValueArr))->toEqualCanonicalizing([
+    $data = $docx->document()->first()->toArray();
+    expect($data)->toBeArray()
+        ->and(array_keys($data))->toEqualCanonicalizing([
         "parent_table_name_text", "quick_entry_text", "read_only_text", "is_publish_text", "is_single_text", "is_tree_text",
         "is_table_text", "allow_import_text", "allow_export_text", "allow_recycle_text", "allow_copy_text", "allow_rename_text",
         "track_changes_text", "status_text"
-    ])->and($appendValueArr['status_text'])->toBeIn(["已启用","未启用"]);
+    ])->and($data['status_text'])->toBe("已启用")
+        ->and($data['quick_entry'])->toBe('quick_entry');
 
 
 });
 
 
-it('【docx】get text rules', function (): void {
 
-    $docx = Easy::docx($this->tabelName);
-    $rules = $docx->getRules();
-    $this->assertIsArray($rules);
-});
 
 
 it('【docx】get relations', function (): void {

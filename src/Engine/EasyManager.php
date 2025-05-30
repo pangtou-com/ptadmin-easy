@@ -44,23 +44,28 @@ final class EasyManager implements IEasyManager
 
         throw new EasyException("未定义的方法：{$name}");
     }
-
     /**
      * 加载文档对象.
      *
-     * @param string $docx
+     * @param string|array $docx
      * @param string $module
      *
      * @return IDocx
      */
-    public function docx(string $docx, string $module = ''): IDocx
+    public function docx($docx, string $module = ''): IDocx
     {
-        $docx = $this->getDocxName($docx, $module);
-        if (isset(self::$docx[$docx])) {
-            return self::$docx[$docx];
+        if (is_array($docx)) {
+            if (!isset($docx['table_name'])) {
+                throw new EasyException('Table name is required.');
+            }
+            $name = $docx['table_name'];
+        } else {
+            $name = $this->getDocxName($docx, $module);
         }
-
-        return self::$docx[$docx] = app(IDocx::class, ['docx' => $docx, 'module' => $module]);
+        if (isset(self::$docx[$name])) {
+            return self::$docx[$name];
+        }
+        return self::$docx[$name] = app(IDocx::class, ['docx' => $docx, 'module' => $module]);
     }
 
     public function document(string $docx, string $module = ''): Document

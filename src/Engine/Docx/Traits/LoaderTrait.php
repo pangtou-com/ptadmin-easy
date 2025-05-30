@@ -23,8 +23,6 @@ trait LoaderTrait
 {
     /** @var array metadata 原始数据 */
     protected $metadata = [];
-    /** @var DocxNameParser */
-    protected $parser;
 
     public function loader($force = false)
     {
@@ -35,8 +33,8 @@ trait LoaderTrait
                 return $this;
             }
         }
-
         try {
+
             return $this->loadThroughFile($this->getDocxJsonPath());
         } catch (EasyException $e) {
         }

@@ -22,15 +22,15 @@ trait SelectComponentTrait
         return 'in:'.implode(',', $this->getOptionRules());
     }
 
-    protected function getCheckboxRule(): ?string
+    protected function getCheckboxRule(): array
     {
-        return 'array|in:'.implode(',', $this->getOptionRules());
+        return [];
     }
 
-    protected function getSelectRule(): ?string
+    protected function getSelectRule()
     {
         if ($this->isMultiple()) {
-            return 'array|in:'.implode(',', $this->getOptionRules());
+            return $this->getCheckboxRule();
         }
 
         return 'in:'.implode(',', $this->getOptionRules());
