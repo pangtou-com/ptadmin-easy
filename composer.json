@@ -41,6 +41,9 @@
             "PTAdmin\\Easy\\Tests\\": "tests/"
         }
     },
+    "archive": {
+        "exclude": ["/tests/", "/.github/", "/docs/", "phpunit.xml.dist", ".php_cs.dist.php", "package.json"]
+    },
     "scripts": {
         "phpstan": "./vendor/bin/phpstan.phar analyse src --configuration phpstan.neon",
         "test:pest": "./vendor/bin/pest --no-interaction",
