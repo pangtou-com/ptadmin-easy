@@ -3,7 +3,7 @@
     "module": "core",
     "table_name": "docx_has_comment",
     "fields": [
-        {"name": "title", "type": "text", "label": "文档名称", "is_required": 1, "is_unique": 1, "length": 50},
+        {"name": "title", "type": "text", "label": "文档名称", "is_required": 1, "is_unique": 1, "length": 50}
     ],
     "intro" : "这里是文档介绍"
 }

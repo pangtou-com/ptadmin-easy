@@ -81,4 +81,5 @@ trait TextComponentTrait
     {
         return ['numeric'];
     }
+
 }
