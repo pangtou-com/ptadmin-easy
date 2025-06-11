@@ -6,6 +6,7 @@ export function getSideBarGuide() {
         { text: 'PTAdmin\/Easy?', link: '/guide/index.md' },
         { text: '安装', link: '/guide/install.md' },
         { text: '示例', link: '/guide/example.md' },
+        { text: '测试', link: '/guide/text/example.md' },
         {
             text: 'API',
             collapsible: true,

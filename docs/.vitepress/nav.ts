@@ -8,5 +8,4 @@ export function getNavBar() {
         { text: '案例', link: '/examples/', activeMatch: '/examples/' },
         { text: 'PTAdmin官网', link: 'https://www.pangtou.com' },
     ]
-
 }
