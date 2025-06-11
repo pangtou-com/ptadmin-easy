@@ -33,7 +33,7 @@ trait BaseDocxTrait
     /** @var string 文档基础命名空间 */
     protected $base_namespace;
 
-    public function parser(string $docx, string $module = ''): self
+    public function parser(string $docx, string $module = '')
     {
         $this->docx = $docx;
         $this->module = $module;
@@ -44,10 +44,8 @@ trait BaseDocxTrait
         } else {
             $this->name = $docx;
         }
-
         $this->normalizePath($docx);
 
-        return $this;
     }
 
     /**
@@ -82,6 +80,7 @@ trait BaseDocxTrait
 
     public function getDocxJsonPath(): string
     {
+
         return $this->getDocxRootPath($this->name.'.json');
     }
 
@@ -116,12 +115,11 @@ trait BaseDocxTrait
      */
     private function normalizePath($path): void
     {
-        if (\is_array($path)) {
+        if (\is_array($path) && \count($path) > 0) {
             $this->path = implode(\DIRECTORY_SEPARATOR, array_map(function ($item) {
                 return Str::ucfirst($item);
             }, $path));
         }
-
         $path = [];
         // 设置完整路径地址和命名空间
         switch ($this->module) {
@@ -150,8 +148,8 @@ trait BaseDocxTrait
 
                 break;
         }
-
         $this->base_path = base_path(implode(\DIRECTORY_SEPARATOR, $path));
+
     }
 
     /**

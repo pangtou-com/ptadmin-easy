@@ -130,6 +130,7 @@ class Docx implements IDocx
                 $attributes[$field->getName()] = $field->getLabel();
                 $rules[$field->getName()] = $rule;
             }
+
             $this->rules = [$rules, $attributes];
         }
 
@@ -174,7 +175,7 @@ class Docx implements IDocx
         return $this->fields[$name] ?? null;
     }
 
-    public function gerExportFields(): array
+    public function getExportFields(): array
     {
         if (null === $this->export_fields) {
             $this->export_fields = [];

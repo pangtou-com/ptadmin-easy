@@ -59,6 +59,7 @@ trait SchemaHandle
         Schema::create($docx->getRawTable(), function (Blueprint $table) use ($docx): void {
             $table->increments($docx->getPrimaryKey());
             foreach ($docx->getFields() as $field) {
+
                 $this->createField($field, $table);
             }
             if ($docx->allowRecycle()) {
@@ -88,6 +89,7 @@ trait SchemaHandle
     protected function createField(IDocxField $field, Blueprint $table): void
     {
         $component = $field->getComponent();
+
         if ($component->isVirtual() || $field->isVirtual()) {
             return;
         }
@@ -101,8 +103,10 @@ trait SchemaHandle
         if (null !== $field->getDefault()) {
             $column->default($field->getDefault());
         }
+
         if ($field->exists()) {
             $column->change();
         }
+
     }
 }

@@ -35,9 +35,13 @@ abstract class TestCase extends Orchestra
         $app['config']->set('test_path', \dirname(__DIR__).\DIRECTORY_SEPARATOR.'tests'.\DIRECTORY_SEPARATOR.'Stubs');
         $app['config']->set('database.default', 'testing');
         $app['config']->set('database.connections.testing', [
-            'driver' => 'sqlite',
-            'database' => ':memory:',
+            'driver' => 'mysql',
+            'database' => 'test',
             'prefix' => '',
+            'host' => '127.0.0.1',
+            'username' => 'root',
+            'password' => 'root',
+            'port' => 3306
         ]);
         // $path = __DIR__.'/../database/migrations/2024_06_13_154934_mod_init.php';
 
