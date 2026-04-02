@@ -16,7 +16,6 @@ declare(strict_types=1);
 namespace PTAdmin\Easy\Engine\Docx\Traits;
 
 use PTAdmin\Easy\Easy;
-use PTAdmin\Easy\Engine\Docx\DocxNameParser;
 use PTAdmin\Easy\Exceptions\EasyException;
 
 trait LoaderTrait
@@ -33,10 +32,15 @@ trait LoaderTrait
                 return $this;
             }
         }
-        try {
+        $filepath = $this->getDocxJsonPath();
 
-            return $this->loadThroughFile($this->getDocxJsonPath());
-        } catch (EasyException $e) {
+
+        if (is_readable($filepath) && is_file($filepath)) {
+            try {
+                return $this->loadThroughFile($filepath);
+            } catch (EasyException $e) {
+                throw new EasyException($e->getMessage(), $e->getCode(), $e);
+            }
         }
 
         return $this->loadThroughDocx($this->getDocxName());
@@ -51,9 +55,6 @@ trait LoaderTrait
      */
     public function loadThroughFile(string $filepath): self
     {
-        if (!is_readable($filepath) || !is_file($filepath)) {
-            throw new EasyException("无效或无权限的[{$filepath}]文件");
-        }
         $data = @json_decode(@file_get_contents($filepath), true);
         if (JSON_ERROR_NONE !== json_last_error()) {
             throw new EasyException("文件【{$filepath}】内容错误:".json_last_error_msg());
@@ -87,6 +88,11 @@ trait LoaderTrait
      */
     public function loadThroughMetadata(array $metadata): self
     {
+        if (!isset($metadata['table_name'], $metadata['module'])) {
+            throw new EasyException('Table name and module are required.');
+        }
+        $this->docx = $metadata['table_name'];
+        $this->module = $metadata['module'];
         $this->metadata = $metadata;
 
         return $this;

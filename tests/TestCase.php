@@ -41,12 +41,7 @@ abstract class TestCase extends Orchestra
             'host' => '127.0.0.1',
             'username' => 'root',
             'password' => 'root',
-            'port' => 3306
+            'port' => 3306,
         ]);
-        // $path = __DIR__.'/../database/migrations/2024_06_13_154934_mod_init.php';
-
-        // include_once $path;
-        // self::$migration = new \ModInit();
-        // self::$migration->up();
     }
 }

@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace PTAdmin\Easy\Providers;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use PTAdmin\Easy\Contracts\IDocx;
 use PTAdmin\Easy\Contracts\IDocxField;
@@ -31,15 +32,15 @@ class EasyServiceProviders extends ServiceProvider
         });
         $this->app->bind(IDocx::class, Docx::class);
         $this->app->bind(IDocxField::class, DocxField::class);
-        // 配置文件以发布到 config 目录下则不需要在读取配置文件
-        if (!file_exists(config_path('easy.php'))) {
-            $this->mergeConfigFrom(__DIR__.'/../../config/easy.php', 'easy');
-        }
     }
 
     public function boot(): void
     {
-        $this->publishing();
+        // $this->publishing();
+        $this->easyRoute();
+        $this->commands([
+            \PTAdmin\Easy\Commands\EasyInit::class,
+        ]);
     }
 
     public function publishing(): void
@@ -49,5 +50,10 @@ class EasyServiceProviders extends ServiceProvider
                 __DIR__.'/../../config/easy.php' => config_path('easy.php'),
             ], 'ptadmin-easy');
         }
+    }
+
+    private function easyRoute(): void
+    {
+        Route::middleware(['api'])->prefix(config('app.prefix', 'system'))->group(\dirname(__DIR__).\DIRECTORY_SEPARATOR.'Route/admin.php');
     }
 }

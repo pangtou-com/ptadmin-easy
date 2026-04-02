@@ -1,7 +1,7 @@
 {
     "title": "字段管理",
-    "module": "core",
-    "table_name": "docx_fields",
+    "module": "__easy__",
+    "table_name": "docx_field",
     "intro": "文档的字段管理表，记录所有文档字段信息",
     "allow_recycle": 1,
     "track_changes": 1,
@@ -10,15 +10,17 @@
         {"name": "title", "label": "字段标题", "is_required": 1, "is_unique": 1, "length": 50},
         {"name": "name", "label": "字段名称", "is_required": 1, "is_unique": 1, "length": 50},
         {"name": "docx_name", "type": "select", "label": "所属文档", "is_required": 1, "extends":  {
+            "type": "docx",
             "table": "docx",
-            "link_field": "name",
-            "show_field": "title",
+            "value": "table_name",
+            "label": "title",
             "filter": []
         }},
         {"name": "parent_name", "type": "select", "label": "父级", "is_edit": 0, "extends":  {
-            "table": "docx_fields",
-            "link_field": "name",
-            "show_field": "title",
+            "type": "docx",
+            "table": "docx_field",
+            "value": "name",
+            "label": "title",
             "filter": []
         }},
         {"name": "type", "label": "字段类型", "length": 20},

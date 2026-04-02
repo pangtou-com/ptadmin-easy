@@ -21,7 +21,6 @@ use PTAdmin\Easy\Engine\Docx\Traits\BaseDocxTrait;
 use PTAdmin\Easy\Engine\Docx\Traits\LoaderTrait;
 use PTAdmin\Easy\Engine\Docx\Traits\RelationsTrait;
 use PTAdmin\Easy\Engine\Model\Document;
-use PTAdmin\Easy\Exceptions\EasyException;
 
 class Docx implements IDocx
 {
@@ -49,17 +48,12 @@ class Docx implements IDocx
     /** @var array 附加属性信息 */
     private $appends = [];
 
-    public function __construct($docx, string $namespace = '')
+    public function __construct($docx, string $module = '')
     {
         if (\is_array($docx)) {
-            if (!isset($docx['table_name'], $docx['module'])) {
-                throw new EasyException('Table name and module are required.');
-            }
-            $this->docx = $docx['table_name'];
-            $this->module = $docx['module'];
             $this->loadThroughMetadata($docx);
         } else {
-            $this->parser($docx, $namespace);
+            $this->parser($docx, $module);
             $this->loader();
         }
 
@@ -96,6 +90,7 @@ class Docx implements IDocx
 
     public function getFillable(): array
     {
+
         return array_keys($this->getAttributes());
     }
 
@@ -255,6 +250,11 @@ class Docx implements IDocx
         }
 
         return $appends;
+    }
+
+    public function toArray(): array
+    {
+        return $this->metadata;
     }
 
     protected function getMetadata($key = null, $default = null)

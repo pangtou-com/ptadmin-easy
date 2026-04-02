@@ -33,7 +33,7 @@ trait BaseDocxTrait
     /** @var string 文档基础命名空间 */
     protected $base_namespace;
 
-    public function parser(string $docx, string $module = '')
+    public function parser(string $docx, string $module = ''): void
     {
         $this->docx = $docx;
         $this->module = $module;
@@ -44,8 +44,8 @@ trait BaseDocxTrait
         } else {
             $this->name = $docx;
         }
-        $this->normalizePath($docx);
 
+        $this->normalizePath($docx);
     }
 
     /**
@@ -80,7 +80,6 @@ trait BaseDocxTrait
 
     public function getDocxJsonPath(): string
     {
-
         return $this->getDocxRootPath($this->name.'.json');
     }
 
@@ -117,9 +116,10 @@ trait BaseDocxTrait
     {
         if (\is_array($path) && \count($path) > 0) {
             $this->path = implode(\DIRECTORY_SEPARATOR, array_map(function ($item) {
-                return Str::ucfirst($item);
+                return $item;
             }, $path));
         }
+
         $path = [];
         // 设置完整路径地址和命名空间
         switch ($this->module) {
@@ -134,7 +134,7 @@ trait BaseDocxTrait
                 break;
 
             case Common::INTERNAL_NAMESPACE:
-                $this->base_path = \dirname(__DIR__, 2).\DIRECTORY_SEPARATOR.'Docx';
+                $this->base_path = \dirname(__DIR__, 3).\DIRECTORY_SEPARATOR.'Docx';
                 $this->base_namespace = 'PTAdmin\\Easy\\Docx';
 
                 return;
@@ -149,7 +149,6 @@ trait BaseDocxTrait
                 break;
         }
         $this->base_path = base_path(implode(\DIRECTORY_SEPARATOR, $path));
-
     }
 
     /**

@@ -15,10 +15,47 @@ declare(strict_types=1);
 
 namespace PTAdmin\Easy\Engine\Model\Traits;
 
-use Illuminate\Support\Facades\DB;
+use PTAdmin\Easy\Engine\Model\FormDTO;
+use PTAdmin\Easy\Engine\Model\Validate;
 
 trait CreateTrait
 {
+    /** @var bool 是否需要校验 */
+    protected $validate = true;
+
+    /**
+     * 直接更新数据.不会记录跟踪数据更新情况.
+     *
+     * @param array $data
+     *
+     * @return int
+     */
+    public function update(array $data): int
+    {
+        $model = $this->getEditModel();
+
+        return (int) $model->update($data);
+    }
+
+    /**
+     * 更新数据同时会根据需求更新跟踪数据的更新情况.
+     *
+     * @param array $data
+     */
+    public function edit(array $data): void
+    {
+        $model = $this->getEditModel();
+        $dto = FormDTO::make($data, $model);
+
+        if ($this->validate) {
+            (new Validate($dto, $this))->validate();
+        }
+
+        if ((int) $model->update($data) > 0) {
+            $this->track($model);
+        }
+    }
+
     /**
      * 直接保存数据.
      *
@@ -33,70 +70,105 @@ trait CreateTrait
             return null;
         }
         $model->fill($data);
-        $model->save();
+        $saved = $model->save();
 
-        $this->trigger('after_saving', $model);
+        if ($saved) {
+            $this->trigger('after_saving', $model);
+        }
 
-        return $model;
+        return $saved ? $this->model = $model : null;
     }
 
     /**
      * 保存数据，并跟踪记录数据的更新情况.
-     * 当数据存在一对多的情况时，会同步更新关联表数据。
      *
      * @param array $data
-     * @param bool  $many 是否同步修改关联表数据
      *
-     * @return bool
+     * @return \PTAdmin\Easy\Engine\Model\EasyModel|\PTAdmin\Easy\Engine\Model\EasyModel[]
      */
-    public function store(array $data, bool $many = true): bool
+    public function store(array $data)
     {
-        $data = $this->createValidate($data);
-        // 1、关联表的数据存储
-        // 2、数据修改器[已处理]
-        // 3、数据校验的完整性
-        DB::transaction(function () use ($data, $many): void {
-            $this->model = $this->save($data);
-            if ($many && null !== $this->model) {
-                $this->createMany($data, $this->model);
-            }
-        });
-        // TODO 更新全局搜索字段信息
-        // TODO 记录更新日志
-        $this->track($this->model);
+        $dto = FormDTO::make($data);
+        if ($this->validate) {
+            (new Validate($dto, $this))->validate();
+        }
 
-        return null !== $this->model;
-    }
+        // 保存成功后执行后续处理
+        // 1、记录日志
+        // 2、更新全局搜索字段信息
+        if (null !== $this->save($dto->getData())) {
+            $this->track($this->model);
+        }
 
-    public function many(array $data): void
-    {
+        return $this->model;
     }
 
     /**
-     * 关联表的数据存储.
+     * 保存数据并同步修改关联表数据.
      *
-     * @param array      $data
-     * @param null|mixed $model
-     *
-     * @return bool
+     * @param array $data
      */
-    public function createMany(array $data, $model = null): bool
+    public function storeAndSaveMany(array $data): void
     {
-        $model = null === $model ? $this->model : $model;
+        if (null !== $this->store($data)) {
+            $this->handleSaveMany($data);
+        }
+    }
+
+    public function many(): void
+    {
+        $docx = $this->docx();
+    }
+
+    /**
+     * 关联表的数据存储.1对多的数据存储.
+     *
+     * @param mixed $field
+     * @param array $data
+     */
+    public function createMany($field, array $data): void
+    {
+        $field = $this->docx()->getField($field);
+        $relation = $field->getRelation();
+        dump($relation);
+    }
+
+    /**
+     * 设置验证.
+     *
+     * @param mixed $validate
+     *
+     * @return BaseTrait|\PTAdmin\Easy\Engine\Model\Document
+     */
+    public function setValidate($validate = true): self
+    {
+        $this->validate = $validate;
+
+        return $this;
+    }
+
+    /**
+     * 保存组件为table类型的一对多关联数据.
+     *
+     * @param array $data
+     *
+     * @return false|void
+     */
+    protected function handleSaveMany(array $data)
+    {
+        $model = $this->model;
         if (null === $model || !$model->exists) {
             return false;
         }
         $relation = $this->docx->getRelations();
-        if (!\is_array($relation) || 0 === \count($relation)) {
+        if (0 === \count($relation)) {
             return false;
         }
         foreach ($relation as $key => $val) {
             if (!isset($data[$key])) {
                 continue;
             }
-            // todo 待处理
+            $this->createMany($key, $data[$key]);
         }
-
-        return true;
     }
 }

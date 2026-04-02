@@ -37,4 +37,25 @@
 
 
 
+```json 扩展信息展示
+{"name": "status", "type": "radio", "label": "状态", "options": [
+    {"label": "已启用", "value": 1, "color": "#ccc"},
+    {"label": "未启用", "value": 0, "color": "#ccc"}
+], "default":  0, "extends":  {
+    "type": "config",
+    "key": "constant.status",
+    "intro": "这个配置来源与laravel的系统配置信息，配置个格式与options一致"
+}, "extends1":  {
+    "type": "docx",
+    "table": "docx",
+    "label": "展示的值",
+    "value": "读取的值",
+    "intro": "这个配置来源与laravel的系统配置信息，配置个格式与options一致"
+}, "extends2":  {
+    "type": "textarea",
+    "content": "aa=d",
+    "intro": "这个配置来源与laravel的系统配置信息，配置个格式与options一致"
+}}
+```
+
 

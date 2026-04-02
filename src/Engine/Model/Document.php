@@ -92,7 +92,6 @@ class Document
     public function __call($name, $arguments)
     {
         if (method_exists($this->query(), $name)) {
-            $this->model = null;
             \call_user_func_array([$this->query(), $name], $arguments);
         }
 
@@ -126,7 +125,7 @@ class Document
     public function query(): \Illuminate\Database\Eloquent\Builder
     {
         if (null === $this->query) {
-            $this->query = $this->newModel()->newQuery();
+            $this->newQuery();
         }
 
         return $this->query;
@@ -151,8 +150,7 @@ class Document
      */
     public function newQuery(): self
     {
-        $this->query = null;
-        $this->query();
+        $this->query = $this->newModel()->newQuery();
 
         return $this;
     }

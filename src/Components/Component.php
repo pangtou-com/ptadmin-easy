@@ -70,11 +70,11 @@ class Component
         // 'date_range' => ['class' => DateComponent::class, 'label' => '时间区间', 'group' => 'date'],
 
         // 功能组件
-        'block' => ['class' => BlockComponent::class, 'label' => '功能块', 'group' => 'func'],
+        'block' => ['class' => BlockComponent::class, 'label' => '功能块', 'is_virtual' => true, 'group' => 'func'],
         'link' => ['class' => LinkComponent::class, 'label' => '链接表', 'group' => 'func', 'append' => true, 'relation' => true],
         'json' => ['class' => JsonComponent::class, 'label' => 'Json', 'group' => 'func'],
-        'table' => ['class' => JsonComponent::class, 'label' => '表格', 'group' => 'func', 'relation' => true],
-        'mirror' => ['class' => JsonComponent::class, 'label' => '镜像数据', 'group' => 'func'],
+        'table' => ['class' => JsonComponent::class, 'label' => '表格', 'is_virtual' => true, 'group' => 'func', 'relation' => true],
+        'mirror' => ['class' => JsonComponent::class, 'label' => '镜像数据', 'is_virtual' => true, 'group' => 'func'],
         'clone' => ['class' => JsonComponent::class, 'label' => '克隆数据', 'group' => 'func'],
     ];
 
@@ -96,7 +96,7 @@ class Component
         try {
             return new $component($field);
         } catch (\Exception $exception) {
-            throw new EasyException("【{$field->getType()}】实例化失败：{$exception->getMessage()}");
+            throw new EasyException("字段【{$field->getName()}】实例化组件【{$field->getType()}】失败，错误信息：{$exception->getMessage()}");
         }
     }
 
@@ -140,37 +140,39 @@ class Component
     }
 
     /**
-     * 获取所有支持附加属性的组件.
+     * 是否支持附件属性组件.
      *
-     * @return array
+     * @param mixed $type
+     *
+     * @return bool
      */
-    public function getAppends(): array
+    public function isAppend($type): bool
     {
-        if (\count($this->appends) > 0) {
-            return $this->appends;
-        }
-        $this->appends = array_keys(array_filter(self::$COMPONENTS, function ($item) {
-            return $item['append'] ?? false;
-        }));
-
-        return $this->appends;
+        return true === (bool) (self::$COMPONENTS[$type]['append'] ?? false);
     }
 
     /**
-     * 获取支持关联字段的组件.
+     * 判断组件是否为虚拟组件.
      *
-     * @return array
+     * @param string $type
+     *
+     * @return bool
      */
-    public function getRelations(): array
+    public function isVirtual(string $type): bool
     {
-        if (\count($this->relation) > 0) {
-            return $this->relation;
-        }
-        $this->relation = array_keys(array_filter(self::$COMPONENTS, function ($item) {
-            return $item['relation'] ?? false;
-        }));
+        return true === (bool) (self::$COMPONENTS[$type]['is_virtual'] ?? false);
+    }
 
-        return $this->relation;
+    /**
+     * 是否关联关系组件.
+     *
+     * @param mixed $type
+     *
+     * @return bool
+     */
+    public function isRelation($type): bool
+    {
+        return true === (bool) (self::$COMPONENTS[$type]['relation'] ?? false);
     }
 
     /**

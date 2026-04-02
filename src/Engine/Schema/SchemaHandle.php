@@ -59,7 +59,6 @@ trait SchemaHandle
         Schema::create($docx->getRawTable(), function (Blueprint $table) use ($docx): void {
             $table->increments($docx->getPrimaryKey());
             foreach ($docx->getFields() as $field) {
-
                 $this->createField($field, $table);
             }
             if ($docx->allowRecycle()) {
@@ -107,6 +106,5 @@ trait SchemaHandle
         if ($field->exists()) {
             $column->change();
         }
-
     }
 }

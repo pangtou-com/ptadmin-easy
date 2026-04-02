@@ -17,10 +17,11 @@ namespace PTAdmin\Easy\Controller;
 
 use Illuminate\Http\Request;
 use PTAdmin\Easy\Easy;
+use PTAdmin\Easy\Exceptions\EasyException;
+use PTAdmin\Easy\Utils\ResponseVo;
 
 abstract class EasyController
 {
-
     protected $docx;
     protected $module;
 
@@ -35,11 +36,11 @@ abstract class EasyController
     {
         $filter = $request->get('filter', []);
         $with = $request->get('with', []);
-        $filterMap = Easy::document($this->docx, $this->module);
+        $filterMap = Easy::document($this->getDocx(), $this->getModule());
 
         $data = $filterMap->page();
 
-        return $this->response($data);
+        return ResponseVo::pages($data);
     }
 
     /**
@@ -52,7 +53,7 @@ abstract class EasyController
      */
     public function detail($id, Request $request): \Illuminate\Http\JsonResponse
     {
-        return $this->response([]);
+        return ResponseVo::success();
     }
 
     /**
@@ -65,7 +66,7 @@ abstract class EasyController
      */
     public function tree($id, Request $request): \Illuminate\Http\JsonResponse
     {
-        return $this->response([]);
+        return ResponseVo::success();
     }
 
     /**
@@ -78,7 +79,7 @@ abstract class EasyController
      */
     public function level($id, Request $request): \Illuminate\Http\JsonResponse
     {
-        return $this->response([]);
+        return ResponseVo::success();
     }
 
     /**
@@ -91,7 +92,7 @@ abstract class EasyController
      */
     public function edit($id, Request $request): \Illuminate\Http\JsonResponse
     {
-        return $this->response([]);
+        return ResponseVo::success();
     }
 
     /**
@@ -101,11 +102,11 @@ abstract class EasyController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function create(Request $request): \Illuminate\Http\JsonResponse
+    public function store(Request $request): \Illuminate\Http\JsonResponse
     {
-        Easy::document($this->docx, $this->module)->store($request->all());
+        Easy::document($this->getDocx(), $this->getModule())->store($request->all());
 
-        return $this->response([]);
+        return ResponseVo::success();
     }
 
     /**
@@ -116,15 +117,20 @@ abstract class EasyController
      */
     public function delete($id, Request $request): \Illuminate\Http\JsonResponse
     {
-        return $this->response([]);
+        return ResponseVo::success();
     }
 
-    protected function response($data = []): \Illuminate\Http\JsonResponse
+    protected function getDocx()
     {
-        return response()->json([
-            'code' => 0,
-            'data' => $data,
-            'message' => 'success',
-        ]);
+        if (null === $this->docx) {
+            throw new EasyException('请设置docx');
+        }
+
+        return $this->docx;
+    }
+
+    protected function getModule()
+    {
+        return $this->module;
     }
 }

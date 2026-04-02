@@ -1,6 +1,6 @@
 {
     "title": "文档管理",
-    "module": "core",
+    "module": "__easy__",
     "table_name": "docx",
     "intro": "文档管理主表，用于管理所有的文档基础信息",
     "allow_recycle": 1,
@@ -22,11 +22,10 @@
         {"name": "table_name", "type": "text", "label": "表名称", "length": 50, "is_required": 1, "is_unique": 1,
             "is_edit": 0
         },
-        {"name": "parent_table_name", "type": "link", "label": "关联表", "is_edit": 0, "extends":  {
-            "name": "docx",
+        {"name": "parent_table_name", "type": "link", "label": "上级文档", "is_edit": 0, "extends":  {
+            "table": "docx",
             "value": "table_name",
-            "label": "title",
-            "filter": []
+            "label": "title"
         }},
         {"name": "module", "type": "text", "label": "所属模块", "is_edit": 0, "is_required": 1 },
         {"name": "intro", "type": "text", "label": "描述信息"},
@@ -37,6 +36,12 @@
         {"name": "cover", "type": "image", "label": "封面图", "length": 30},
         {"name": "migrate_hash", "type": "text", "label": "迁移文件哈希", "length": 36, "hidden":  1},
         {"name": "weight", "type": "number", "label": "权重", "min": 0, "max": 255, "step": 1, "default": 99},
+        {"name": "fields", "type": "table", "label": "表字段", "extends":  {
+            "type": "many",
+            "table": "docx_field",
+            "local_key": "table_name",
+            "foreign_key": "docx_name"
+        }},
         {"name": "quick_entry", "type": "radio", "label": "快捷入口", "options": [
             {"label": "是", "value": 1},
             {"label": "否", "value": 0}
@@ -88,20 +93,6 @@
         {"name": "status", "type": "radio", "label": "状态", "options": [
             {"label": "已启用", "value": 1, "color": "#ccc"},
             {"label": "未启用", "value": 0, "color": "#ccc"}
-        ], "default":  0, "extends":  {
-            "type": "config",
-            "key": "constant.status",
-            "intro": "这个配置来源与laravel的系统配置信息，配置个格式与options一致"
-        }, "extends1":  {
-            "type": "docx",
-            "docx": "docx",
-            "label": "展示的值",
-            "value": "读取的值",
-            "intro": "这个配置来源与laravel的系统配置信息，配置个格式与options一致"
-        }, "extends2":  {
-            "type": "textarea",
-            "content": "aa=d",
-            "intro": "这个配置来源与laravel的系统配置信息，配置个格式与options一致"
-        }}
+        ], "default":  0}
     ]
 }

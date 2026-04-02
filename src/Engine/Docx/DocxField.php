@@ -61,22 +61,6 @@ class DocxField implements IDocxField
         return $this->component;
     }
 
-    public function isRelation(): bool
-    {
-        if (!\in_array($this->getType(), Easy::component()->getRelations(), true)) {
-            return false;
-        }
-        // 配置完整的关联信息才能是关联字段
-        $tableName = $this->getMetadata('extends.table_name');
-
-        return null !== $tableName && '' !== $tableName;
-    }
-
-    public function getRelation(): array
-    {
-        return $this->getMetadata('extends', []);
-    }
-
     public function getComment(): string
     {
         return $this->getMetadata('comment', $this->getLabel());
@@ -87,16 +71,34 @@ class DocxField implements IDocxField
         return $this->getMetadata('label');
     }
 
-    public function isAppend(): bool
+    public function getRelation(): array
     {
-        if (\in_array($this->getType(), Easy::component()->getAppends(), true)) {
-            return true;
+        return $this->getMetadata('extends', []);
+    }
+
+    public function isRelation(): bool
+    {
+        if (!Easy::component()->isRelation($this->getType())) {
+            return false;
+        }
+        // 当类型为选项类型时需要查看选项来源是否来源与文档
+        if (\in_array($this->getType(), ['radio', 'checkbox', 'select'], true)) {
+            $relation = $this->getRelation();
+
+            return isset($relation['type'], $relation['table']) && 'docx' === $relation['type'];
         }
 
-        // 当手动设置了附加名称，则认为它是附加字段， 这个时候可以实现获取属性的方法获取属性值
-        $appendName = $this->getMetadata('extends.append_name');
+        return true;
+    }
 
-        return null !== $appendName && '' !== $appendName;
+    public function isVirtual(): bool
+    {
+        return Easy::component()->isVirtual($this->getType());
+    }
+
+    public function isAppend(): bool
+    {
+        return Easy::component()->isAppend($this->getType());
     }
 
     public function getAppendName(): string
@@ -181,16 +183,16 @@ class DocxField implements IDocxField
         return $this->name;
     }
 
+    /**
+     * 用于判断当前文档是否已保存数据表.
+     *
+     * @return bool
+     */
     public function exists(): bool
     {
         $id = (int) $this->getMetadata('id');
 
         return $id > 0;
-    }
-
-    public function isVirtual(): bool
-    {
-        return 1 === (int) $this->getMetadata('is_virtual', 0);
     }
 
     public function getType(): string
@@ -205,6 +207,20 @@ class DocxField implements IDocxField
     public function getDocx(): IDocx
     {
         return $this->docx;
+    }
+
+    /**
+     * 是否必填.
+     *
+     * @return null|string
+     */
+    public function required(): ?string
+    {
+        if (1 === (int) $this->getMetadata('is_required', 0)) {
+            return 'required';
+        }
+
+        return null;
     }
 
     protected function getAppendRadioValue($model, $value)
@@ -249,20 +265,6 @@ class DocxField implements IDocxField
     protected function getDefaultAppendName(): string
     {
         return $this->getName().'_text';
-    }
-
-    /**
-     * 是否必填.
-     *
-     * @return null|string
-     */
-    public function required(): ?string
-    {
-        if (1 === (int) $this->getMetadata('is_required', 0)) {
-            return 'required';
-        }
-
-        return null;
     }
 
     /**

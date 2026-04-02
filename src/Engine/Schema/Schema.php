@@ -16,7 +16,9 @@ declare(strict_types=1);
 namespace PTAdmin\Easy\Engine\Schema;
 
 use PTAdmin\Easy\Contracts\IDocx;
+use PTAdmin\Easy\Engine\Docx\Common;
 use PTAdmin\Easy\Engine\Docx\Docx;
+use PTAdmin\Easy\Engine\Model\Document;
 use PTAdmin\Easy\Exceptions\EasyException;
 
 /**
@@ -37,7 +39,7 @@ class Schema
         $this->model = Docx::make($docx, $module);
     }
 
-    public function create(): void
+    public function create(): self
     {
         if ($this->tableExists($this->getModel()->getRawTable())) {
             throw new EasyException('数据表已存在');
@@ -52,6 +54,8 @@ class Schema
         }
 
         $this->setTableComment($this->getModel()->getTable(), $this->getModel()->getComment());
+
+        return $this;
     }
 
     public function update(string $docxName = ''): void
@@ -73,17 +77,28 @@ class Schema
      * 强制创建数据表结构.
      * 当数据表存在时会删除数据表，在重新创建数据表结构.
      */
-    public function forceCreate(): void
+    public function forceCreate(): self
     {
         $docx = $this->getModel();
         if ($this->tableExists($docx->getRawTable())) {
             $this->dropTable($docx->getRawTable());
         }
-        $this->create();
+
+        return $this->create();
     }
 
     public function getModel(): IDocx
     {
         return $this->model;
+    }
+
+    /**
+     * 存入基础表结构信息.
+     */
+    public function save(): void
+    {
+        $document = new Document(Docx::make('docx', Common::INTERNAL_NAMESPACE));
+
+        $document->storeAndSaveMany($this->getModel()->toArray());
     }
 }

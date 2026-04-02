@@ -6,7 +6,7 @@ declare(strict_types=1);
  *  ============================================================================
  *  ******************************【PTAdmin/Easy】******************************
  *  ============================================================================
- *  Copyright (c) 2022-2025 【重庆胖头网络技术有限公司】，并保留所有权利。
+ *  Copyright (c) 2022-2025 【重庆胖头网络技术有限公司】。
  *  ============================================================================
  *  站点首页:  https://www.pangtou.com
  *  文档地址:  https://docs.pangtou.com
@@ -42,15 +42,15 @@ class LinkComponent extends AbstractComponent
     {
         $extends = $this->filed->getMetadata('extends');
 
-        if ($extends['name'] === $this->filed->getDocx()->getRawTable()) {
+        if ($extends['table'] === $this->filed->getDocx()->getRawTable()) {
             if (null === ($field = $this->filed->getDocx()->getField($extends['value']))) {
-                throw new EasyException("关联文档：[{$extends['name']}]中不存在关联字段：{$extends['value']}");
+                throw new EasyException("关联文档：[{$extends['table']}]中不存在关联字段：{$extends['value']}");
             }
             $this->component = $field->getComponent();
 
             return;
         }
         // TODO 如果不在当前文档中需要查询文档对象
-        throw new EasyException("关联文档：[{$extends['name']}]中不存在关联字段：{$extends['value']}");
+        throw new EasyException("关联文档：[{$extends['table']}]中不存在关联字段：{$extends['value']}");
     }
 }

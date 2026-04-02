@@ -150,4 +150,6 @@ interface IDocx
      * @return array
      */
     public function getAppendsValue($model): array;
+
+    public function toArray(): array;
 }

@@ -15,7 +15,6 @@ declare(strict_types=1);
 
 use PTAdmin\Easy\Easy;
 use PTAdmin\Easy\Engine\Model\Document;
-use PTAdmin\Easy\Tests\TestCase;
 
 beforeEach(function (): void {
     $this->modName = 'docx';
@@ -37,9 +36,9 @@ it('【docx】get table', function (): void {
 it('【docx】get attributes', function (): void {
     $docx = Easy::docx($this->tabelName);
     $field = [
-        "title", "table_name", "parent_table_name", "module", "intro", "title_field", "cover_field", "color",
-        "icon", "cover", "migrate_hash", "weight", "quick_entry", "read_only", "is_publish", "is_single", "is_tree",
-        "is_table", "allow_import", "allow_export", "allow_recycle", "allow_copy", "allow_rename", "track_changes", "status"
+        'title', 'table_name', 'parent_table_name', 'module', 'intro', 'title_field', 'cover_field', 'color',
+        'icon', 'cover', 'migrate_hash', 'weight', 'quick_entry', 'read_only', 'is_publish', 'is_single', 'is_tree',
+        'is_table', 'allow_import', 'allow_export', 'allow_recycle', 'allow_copy', 'allow_rename', 'track_changes', 'status',
     ];
     $attributes = $docx->getAttributes();
     $attributesKey = array_keys($attributes);
@@ -47,29 +46,26 @@ it('【docx】get attributes', function (): void {
 });
 
 it('【docx】get fillable', function (): void {
-    $fillableHasBanDocx = Easy::docx("docx_test_has_ban_fillable");
+    $fillableHasBanDocx = Easy::docx('docx_test_has_ban_fillable');
     $fillableHasBan = $fillableHasBanDocx->getFillable();
     expect($fillableHasBan)->toBeArray()
         ->and($fillableHasBan)->toEqualCanonicalizing(['title']);
-
 });
 
 it('【docx】get comment', function (): void {
     $docx = Easy::docx('docx_not_has_comment');
     $docxHasComment = Easy::docx('docx_has_comment');
-    expect($docx->getComment())->toBe("文档管理")
-        ->and($docxHasComment->getComment())->toBe("这里是文档介绍");
+    expect($docx->getComment())->toBe('文档管理')
+        ->and($docxHasComment->getComment())->toBe('这里是文档介绍');
 });
 
 it('【docx】get raw table', function (): void {
-
     $docx = Easy::docx($this->tabelName);
     $rawTable = $docx->getRawTable();
     $this->assertSame($rawTable, $this->tabelName);
 });
 
 it('【docx】get primary key', function (): void {
-
     $docx = Easy::docx($this->tabelName);
     $primaryKey = $docx->getPrimaryKey();
     $this->assertSame($primaryKey, 'id');
@@ -82,8 +78,8 @@ it('【docx】get title field', function (): void {
     $docxTry = Easy::docx($testTry);
     $normalTitleField = $docxNormal->getTitleField();
     $tryTitleField = $docxTry->getTitleField();
-    expect($normalTitleField)->toBe("title")
-        ->and($tryTitleField)->toBe("title_field_test");
+    expect($normalTitleField)->toBe('title')
+        ->and($tryTitleField)->toBe('title_field_test');
 });
 
 it('【docx】get field cover', function (): void {
@@ -93,8 +89,8 @@ it('【docx】get field cover', function (): void {
     $docxTry = Easy::docx($testTry);
     $normalTitleField = $docxNormal->getFieldCover();
     $tryTitleField = $docxTry->getFieldCover();
-    expect($normalTitleField)->toBe("cover")
-        ->and($tryTitleField)->toBe("cover_field_test");
+    expect($normalTitleField)->toBe('cover')
+        ->and($tryTitleField)->toBe('cover_field_test');
 });
 
 it('【docx】get fields', function (): void {
@@ -107,7 +103,7 @@ it('【docx】get field', function (): void {
     $fieldName = 'title';
     $docx = Easy::docx($this->tabelName);
     $field = $docx->getField($fieldName);
-    $nullTest =  $docx->getField('not_exists');
+    $nullTest = $docx->getField('not_exists');
     expect($field)->not->toBeNull()
         ->and($nullTest)->toBeNull();
 });
@@ -138,7 +134,7 @@ it('【docx】get search fields', function (): void {
 });
 
 it('【docx】get order fields', function (): void {
-    $preset = ["title" => "desc", "id" => "desc"];
+    $preset = ['title' => 'desc', 'id' => 'desc'];
     $testNormal = 'test_normal';
     $testTry = 'test_try';
     $docxNormal = Easy::docx($testNormal);
@@ -148,7 +144,6 @@ it('【docx】get order fields', function (): void {
     expect($normalOrderFields)->toEqualCanonicalizing([])
         ->and($tryOrderFields)->toEqualCanonicalizing($preset);
 });
-
 
 it('【docx】document', function (): void {
     $docx = Easy::docx($this->tabelName);
@@ -212,15 +207,14 @@ it('【docx】track changes', function (): void {
 });
 
 it('【docx】get appends value', function (): void {
-
     $config = app()->get('config');
     $config->set('constant.status', [
         ['label' => '已启用', 'value' => 1],
         ['label' => '未启用', 'value' => 0],
     ]);
 
-    Easy::schema("docx_append")->create();
-    $docx = Easy::docx("docx_append");
+    Easy::schema('docx_append')->create();
+    $docx = Easy::docx('docx_append');
     $docx->document()->store([
         'title' => '测试',
         'table_name' => 'docx',
@@ -235,19 +229,12 @@ it('【docx】get appends value', function (): void {
     $data = $docx->document()->first()->toArray();
     expect($data)->toBeArray()
         ->and(array_keys($data))->toEqualCanonicalizing([
-        "parent_table_name_text", "quick_entry_text", "read_only_text", "is_publish_text", "is_single_text", "is_tree_text",
-        "is_table_text", "allow_import_text", "allow_export_text", "allow_recycle_text", "allow_copy_text", "allow_rename_text",
-        "track_changes_text", "status_text"
-    ])->and($data['status_text'])->toBe("已启用")
+            'parent_table_name_text', 'quick_entry_text', 'read_only_text', 'is_publish_text', 'is_single_text', 'is_tree_text',
+            'is_table_text', 'allow_import_text', 'allow_export_text', 'allow_recycle_text', 'allow_copy_text', 'allow_rename_text',
+            'track_changes_text', 'status_text',
+        ])->and($data['status_text'])->toBe('已启用')
         ->and($data['quick_entry'])->toBe('quick_entry');
-
-
 });
 
-
-
-
-
 it('【docx】get relations', function (): void {
-
 });

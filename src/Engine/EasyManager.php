@@ -27,34 +27,20 @@ use PTAdmin\Easy\Exceptions\EasyException;
 
 final class EasyManager implements IEasyManager
 {
-    private const TARGET = [
-        'schema' => Schema::class,
-        'component' => Component::class,
-    ];
-
     /** @var IDocx[] 已解析的docx集合. */
     private static $docx = [];
 
-    public function __call($name, $arguments)
-    {
-        $class = self::TARGET[$name] ?? null;
-        if (null !== $class && class_exists($class)) {
-            return (new \ReflectionClass($class))->newInstance(...$arguments);
-        }
-
-        throw new EasyException("未定义的方法：{$name}");
-    }
     /**
-     * 加载文档对象.
+     * 文档对象.
      *
-     * @param string|array $docx
-     * @param string $module
+     * @param array|string $docx
+     * @param string       $module
      *
      * @return IDocx
      */
     public function docx($docx, string $module = ''): IDocx
     {
-        if (is_array($docx)) {
+        if (\is_array($docx)) {
             if (!isset($docx['table_name'])) {
                 throw new EasyException('Table name is required.');
             }
@@ -65,12 +51,57 @@ final class EasyManager implements IEasyManager
         if (isset(self::$docx[$name])) {
             return self::$docx[$name];
         }
+
         return self::$docx[$name] = app(IDocx::class, ['docx' => $docx, 'module' => $module]);
     }
 
+    /**
+     * 获取文档操作管理.
+     *
+     * @param string $docx
+     * @param string $module
+     *
+     * @return Document
+     */
     public function document(string $docx, string $module = ''): Document
     {
         return new Document($this->docx($docx, $module));
+    }
+
+    /**
+     * 返回文档模型.
+     *
+     * @param string $docx
+     * @param string $module
+     *
+     * @return Model\EasyModel
+     */
+    public function model(string $docx, string $module = ''): Model\EasyModel
+    {
+        return (new Document($this->docx($docx, $module)))->newModel();
+    }
+
+    /**
+     * 数据表结构管理.
+     *
+     * @param mixed $docx
+     * @param string $module
+     *
+     * @return Schema
+     */
+    public function schema($docx, string $module = ''): Schema
+    {
+        return new Schema($docx, $module);
+    }
+
+    /**
+     * 组件管理.
+     *
+     * @return Component
+     */
+    public function component(): Component
+    {
+        return new Component();
     }
 
     /**

@@ -57,7 +57,7 @@ trait OptionsTrait
     {
         $extends = $this->getMetadata('extends', []);
 
-        return isset($extends['docx'], $extends['value'], $extends['type']) && 'docx' === $extends['type'];
+        return isset($extends['table'], $extends['value'], $extends['type']) && 'docx' === $extends['type'];
     }
 
     /**
@@ -69,11 +69,11 @@ trait OptionsTrait
     {
         $extends = $this->getMetadata('extends');
         // 是否来源于当前docx，直接返回当前docx
-        if ($extends['docx'] === $this->docx->getRawTable()) {
+        if ($extends['table'] === $this->docx->getRawTable()) {
             return $this->docx;
         }
 
-        return Easy::docx($extends['docx']);
+        return Easy::docx($extends['table']);
     }
 
     protected function getOptionRules()

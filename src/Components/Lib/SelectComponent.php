@@ -61,6 +61,7 @@ class SelectComponent extends AbstractComponent
     {
         /** @var mixed $field */
         $field = $this->filed;
+
         // 当选项为多选类型时，存储为string类型，使用逗号分割的方式存储
         if ($field->isMultiple()) {
             $this->setColumnTypeString();
@@ -72,9 +73,12 @@ class SelectComponent extends AbstractComponent
             if (null === $docx) {
                 return;
             }
-            $this->component = $docx->getField(
-                $this->filed->getMetadata('extends.value')
-            )->getComponent();
+            $component = $docx->getField($this->filed->getMetadata('extends.value'));
+            if (null === $component) {
+                return;
+            }
+
+            $this->component = $component->getComponent();
 
             return;
         }

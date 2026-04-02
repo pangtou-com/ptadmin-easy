@@ -61,8 +61,20 @@ interface IDocxField
      */
     public function getComment(): string;
 
+    /**
+     * 字段标签.
+     *
+     * @return string
+     */
     public function getLabel(): string;
 
+    /**
+     * 获取字段验证规则.
+     *
+     * @param $id
+     *
+     * @return array
+     */
     public function getRules($id): array;
 
     /**
@@ -89,6 +101,12 @@ interface IDocxField
      * 字段默认值
      */
     public function getDefault();
+
+    /**
+     * 是否必填.
+     *
+     * @return null|string
+     */
     public function required(): ?string;
 
     /**

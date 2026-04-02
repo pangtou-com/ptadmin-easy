@@ -15,6 +15,9 @@ declare(strict_types=1);
 
 namespace PTAdmin\Easy\Engine\Model;
 
+/**
+ * 表单数据传输.
+ */
 class FormDTO
 {
     /** @var array 表单数据 */
@@ -29,13 +32,10 @@ class FormDTO
     public static function make(array $data, $model = null): self
     {
         $self = new self();
-        foreach ($data as $key => $value) {
-            if (null === $value) {
-                unset($data[$key]);
-            }
-        }
-        $self->data = $data;
         $self->model = $model;
+        $self->data = array_filter($data, function ($value) {
+            return null !== $value;
+        }, ARRAY_FILTER_USE_KEY);
 
         return $self;
     }
@@ -43,6 +43,16 @@ class FormDTO
     public function getData(): array
     {
         return $this->data;
+    }
+
+    /**
+     * 过滤规则.
+     */
+    public function filterRules(): void
+    {
+        $this->rules = array_filter($this->getRules(), function ($value, $key) {
+            return isset($this->data[$key]);
+        }, ARRAY_FILTER_USE_BOTH);
     }
 
     public function getModel()
