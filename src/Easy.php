@@ -3,66 +3,42 @@
 declare(strict_types=1);
 
 /**
- *  PTAdmin
  *  ============================================================================
- *  版权所有 2022-2026 重庆胖头网络技术有限公司，并保留所有权利。
- *  网站地址: https://www.pangtou.com
- *  ----------------------------------------------------------------------------
- *  尊敬的用户，
- *     感谢您对我们产品的关注与支持。我们希望提醒您，在商业用途中使用我们的产品时，请务必前往官方渠道购买正版授权。
- *  购买正版授权不仅有助于支持我们不断提供更好的产品和服务，更能够确保您在使用过程中不会引起不必要的法律纠纷。
- *  正版授权是保障您合法使用产品的最佳方式，也有助于维护您的权益和公司的声誉。我们一直致力于为客户提供高质量的解决方案，并通过正版授权机制确保产品的可靠性和安全性。
- *  如果您有任何疑问或需要帮助，我们的客户服务团队将随时为您提供支持。感谢您的理解与合作。
- *  诚挚问候，
- *  【重庆胖头网络技术有限公司】
+ *  ******************************【PTAdmin/Easy】******************************
  *  ============================================================================
- *  Author:    Zane
- *  Homepage:  https://www.pangtou.com
- *  Email:     vip@pangtou.com
+ *  Copyright (c) 2022-2025 【重庆胖头网络技术有限公司】。
+ *  ============================================================================
+ *  站点首页:  https://www.pangtou.com
+ *  文档地址:  https://docs.pangtou.com
+ *  联系邮箱:  vip@pangtou.com
  */
 
 namespace PTAdmin\Easy;
 
-use PTAdmin\Easy\Components\ComponentManager;
-use PTAdmin\Easy\Exceptions\InvalidDataException;
-use PTAdmin\Easy\Service\ModFieldService;
-use PTAdmin\Easy\Service\ModService;
+use Illuminate\Support\Facades\Facade;
+use PTAdmin\Easy\Components\Component;
+use PTAdmin\Easy\Contracts\IDocx;
+use PTAdmin\Easy\Contracts\IEasyManager;
+use PTAdmin\Easy\Engine\Model\Document;
+use PTAdmin\Easy\Engine\Schema\Schema;
 
 /**
- * @method static ModService mod()        模块字段对象
- * @method static ModFieldService field() 模块字段对象
+ * @method static IDocx docx(string|array $docx, string $module = '')        文档对象
+ * @method static Schema schema($docx, string $module = "")            数据表处理对象，用于新增表结构，更新表结构，删除表结构等
+ * @method static bool hasDocx(string $docx)                           文档是否存在
+ * @method static Component component()                                组件管理器
+ * @method static mixed hooks()                                        事件处理钩子对象
+ * @method static Document document(string $docx, string $module = '') 文档模型
+ * @method static mixed charts(string $docx)                           统计模块
+ * @method static bool isDevelop()                                     是否为开发模式
  *
- * @see https://docs.pangtou.com/docs/easy-forms
+ * @see IEasyManager
+ * @see 文档地址 https://docs.pangtou.com/easy-forms
  */
-class Easy
+class Easy extends Facade
 {
-    private static $handler = [
-        'mod' => ModService::class,
-        'field' => ModFieldService::class,
-    ];
-
-    /**
-     * @param mixed $name
-     * @param mixed $arguments
-     *
-     * @throws InvalidDataException
-     */
-    public static function __callStatic($name, $arguments)
+    public static function getFacadeAccessor(): string
     {
-        if (!isset(self::$handler[$name])) {
-            throw new InvalidDataException("【{$name}】未定义");
-        }
-
-        return new self::$handler[$name](...$arguments);
-    }
-
-    /**
-     * 获取组件选项类型.
-     *
-     * @return array
-     */
-    public static function getComponentsOptions(): array
-    {
-        return ComponentManager::getComponentOptions();
+        return 'easy';
     }
 }

@@ -1,0 +1,98 @@
+{
+    "title": "文档管理",
+    "module": "__easy__",
+    "table_name": "docx",
+    "intro": "文档管理主表，用于管理所有的文档基础信息",
+    "allow_recycle": 1,
+    "is_tree": 1,
+    "charts":[
+        {
+            "title": "汇总统计[暂定]",
+            "type": "pie",
+            "fields": [
+                {"name": "title", "type": "sum", "label": "文档名称"},
+                {"name": "module", "type": "count", "label": "所属模块"}
+            ]
+        }
+    ],
+    "tabs": "status[页面布局需要]",
+    "order": {"title":"desc", "id": "desc"},
+    "fields": [
+        {"name": "title", "type": "text", "label": "文档名称", "is_required": 1, "is_unique": 1, "length": 50},
+        {"name": "table_name", "type": "text", "label": "表名称", "length": 50, "is_required": 1, "is_unique": 1,
+            "is_edit": 0
+        },
+        {"name": "parent_table_name", "type": "link", "label": "上级文档", "is_edit": 0, "extends":  {
+            "table": "docx",
+            "value": "table_name",
+            "label": "title"
+        }},
+        {"name": "module", "type": "text", "label": "所属模块", "is_edit": 0, "is_required": 1 },
+        {"name": "intro", "type": "text", "label": "描述信息"},
+        {"name": "title_field", "label": "标题字段", "length": 50, "default":  "title"},
+        {"name": "cover_field", "label": "封面字段", "length": 50, "default":  "cover"},
+        {"name": "color", "type": "color", "label": "色彩", "length": 30},
+        {"name": "icon", "type": "icon", "label": "ICON", "length": 30},
+        {"name": "cover", "type": "image", "label": "封面图", "length": 30},
+        {"name": "migrate_hash", "type": "text", "label": "迁移文件哈希", "length": 36, "hidden":  1},
+        {"name": "weight", "type": "number", "label": "权重", "min": 0, "max": 255, "step": 1, "default": 99},
+        {"name": "fields", "type": "table", "label": "表字段", "extends":  {
+            "type": "many",
+            "table": "docx_field",
+            "local_key": "table_name",
+            "foreign_key": "docx_name"
+        }},
+        {"name": "quick_entry", "type": "radio", "label": "快捷入口", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "read_only", "type": "radio", "label": "是否只读", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "is_publish", "type": "radio", "label": "是否发布", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "is_single", "type": "radio", "label": "是否单页", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "is_tree", "type": "radio", "label": "是否树形结构", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "is_table", "type": "radio", "label": "是否为表格", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "allow_import", "type": "radio", "label": "允许导入", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "allow_export", "type": "radio", "label": "允许导出", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "allow_recycle", "type": "radio", "label": "允许回收站", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  1},
+        {"name": "allow_copy", "type": "radio", "label": "允许拷贝", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "allow_rename", "type": "radio", "label": "允许重命名", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "track_changes", "type": "radio", "label": "跟踪变动", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "status", "type": "radio", "label": "状态", "options": [
+            {"label": "已启用", "value": 1, "color": "#ccc"},
+            {"label": "未启用", "value": 0, "color": "#ccc"}
+        ], "default":  0}
+    ]
+}

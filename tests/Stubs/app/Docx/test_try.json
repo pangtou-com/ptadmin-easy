@@ -1,0 +1,72 @@
+{
+    "title": "测试文档管理",
+    "module": "core",
+    "table_name": "test_try",
+    "order": {"title":"desc", "id": "desc"},
+    "fields": [
+        {"name": "title", "type": "text", "label": "文档名称", "is_required": 1, "is_unique": 1, "is_import" : 1, "is_search" : 1, "is_export" : 1, "length": 50},
+        {"name": "table_name", "type": "text", "label": "表名称", "length": 50, "is_required": 1, "is_export" : 1, "is_unique": 1,
+            "is_edit": 0
+        },
+        {"name": "parent_table_name", "type": "link", "label": "关联表", "is_edit": 0, "extends":  {
+            "name": "docx",
+            "value": "table_name",
+            "label": "title",
+            "filter": []
+        }},
+        {"name": "color", "type": "color", "label": "色彩", "length": 30},
+        {"name": "icon", "type": "icon", "label": "ICON", "length": 30},
+        {"name": "cover", "type": "image", "label": "封面图", "length": 30},
+        {"name": "migrate_hash", "type": "text", "label": "迁移文件哈希", "length": 36, "hidden":  1},
+        {"name": "weight", "type": "number", "label": "权重", "min": 0, "max": 255, "step": 1, "default": 99},
+        {"name": "quick_entry", "type": "radio", "label": "快捷入口", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "allow_import", "type": "radio", "label": "允许导入", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "allow_export", "type": "radio", "label": "允许导出", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "allow_copy", "type": "radio", "label": "允许拷贝", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "allow_recycle", "type": "radio", "label": "允许回收站", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "allow_rename", "type": "radio", "label": "允许重命名", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "track_changes", "type": "radio", "label": "跟踪变动", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "table_name1", "type": "table", "label": "表名称", "length": 50 },
+        {"name": "table_name2", "type": "mirror", "label": "表名称", "length": 50 },
+        {"name": "table_name3", "type": "block", "label": "表名称", "length": 50 }
+    ],
+    "intro" : "这里是文档介绍",
+    "title_field" : "title_field_test",
+    "cover_field" : "cover_field_test",
+    "export_fields" : [
+        "title", "table_name", "parent_table_name", "color", "icon", "cover", "migrate_hash", "weight", "quick_entry"
+    ],
+    "search_fields" : [
+        "title", "table_name", "parent_table_name", "color", "icon", "cover", "migrate_hash", "weight", "quick_entry"
+    ],
+    "import_fields" : [
+        "title", "table_name", "parent_table_name", "color", "icon", "cover", "migrate_hash", "weight", "quick_entry"
+    ],
+    "allow_import" : 1,
+    "allow_export" : 1,
+    "allow_copy" : 1,
+    "allow_recycle" : 1,
+    "allow_rename" : 1,
+    "track_changes" : 0
+}

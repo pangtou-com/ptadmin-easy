@@ -1,0 +1,60 @@
+{
+    "title": "字段管理",
+    "module": "__easy__",
+    "table_name": "docx_field",
+    "intro": "文档的字段管理表，记录所有文档字段信息",
+    "allow_recycle": 1,
+    "track_changes": 1,
+    "is_tree": 1,
+    "fields": [
+        {"name": "title", "label": "字段标题", "is_required": 1, "is_unique": 1, "length": 50},
+        {"name": "name", "label": "字段名称", "is_required": 1, "is_unique": 1, "length": 50},
+        {"name": "docx_name", "type": "select", "label": "所属文档", "is_required": 1, "extends":  {
+            "type": "docx",
+            "table": "docx",
+            "value": "table_name",
+            "label": "title",
+            "filter": []
+        }},
+        {"name": "parent_name", "type": "select", "label": "父级", "is_edit": 0, "extends":  {
+            "type": "docx",
+            "table": "docx_field",
+            "value": "name",
+            "label": "title",
+            "filter": []
+        }},
+        {"name": "type", "label": "字段类型", "length": 20},
+        {"name": "default", "label": "默认值", "length": 50},
+        {"name": "length", "type": "number", "label": "数据长度"},
+        {"name": "intro", "type": "textarea", "label": "备注信息"},
+        {"name": "tips", "type": "textarea", "label": "表单提示"},
+        {"name": "is_release", "type": "radio", "label": "用户投稿", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "is_search", "type": "radio", "label": "全局搜索", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "is_table", "type": "radio", "label": "列表展示", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0, "intro":  "列表的默认显示的字段"},
+        {"name": "is_required", "type": "radio", "label": "是否必填", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "is_unique", "type": "radio", "label": "是否唯一", "options": [
+            {"label": "是", "value": 1},
+            {"label": "否", "value": 0}
+        ], "default":  0},
+        {"name": "setup", "type": "json", "label": "构建配置", "intro":  "表单构建扩展信息如：style、class等"},
+        {"name": "extends", "type": "json", "label": "扩展配置", "intro":  "字段属性信息的扩展配置字段"},
+        {"name": "rules", "type": "json", "label": "规则配置", "intro":  "表单校验规则信息"},
+        {"name": "weight", "type": "number", "label": "排序权重"},
+        {"name": "status", "type": "number", "label": "状态", "options": [
+            {"label": "有效", "value": 1},
+            {"label": "无效", "value": 0}
+        ], "default":  1}
+    ]
+}
