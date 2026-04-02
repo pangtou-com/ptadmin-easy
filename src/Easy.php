@@ -6,7 +6,7 @@ declare(strict_types=1);
  *  ============================================================================
  *  ******************************【PTAdmin/Easy】******************************
  *  ============================================================================
- *  Copyright (c) 2022-2025 【重庆胖头网络技术有限公司】。
+ *  Copyright (c) 2022-2026 【重庆胖头网络技术有限公司】。
  *  ============================================================================
  *  站点首页:  https://www.pangtou.com
  *  文档地址:  https://docs.pangtou.com
@@ -23,7 +23,7 @@ use PTAdmin\Easy\Engine\Model\Document;
 use PTAdmin\Easy\Engine\Schema\Schema;
 
 /**
- * @method static IDocx docx(string|array $docx, string $module = '')        文档对象
+ * @method static IDocx docx(array|string $docx, string $module = '')  文档对象
  * @method static Schema schema($docx, string $module = "")            数据表处理对象，用于新增表结构，更新表结构，删除表结构等
  * @method static bool hasDocx(string $docx)                           文档是否存在
  * @method static Component component()                                组件管理器
