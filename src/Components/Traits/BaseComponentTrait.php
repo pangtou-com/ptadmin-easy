@@ -219,4 +219,68 @@ trait BaseComponentTrait
         return 1 === $this->getMetadata("extends.limit",1) ? $val[0] : json_encode($val);
     }
 
+    /**
+     * JSON 组件获取属性值.
+     *
+     * @param mixed $val
+     *
+     * @return mixed
+     */
+    protected function getJsonAttribute($val)
+    {
+        if (null === $val || '' === $val) {
+            return null;
+        }
+        if (\is_array($val)) {
+            return $val;
+        }
+
+        $decoded = json_decode((string) $val, true);
+
+        return JSON_ERROR_NONE === json_last_error() ? $decoded : $val;
+    }
+
+    /**
+     * JSON 组件设置属性值.
+     *
+     * @param mixed $val
+     *
+     * @return string|null
+     */
+    protected function setJsonAttribute($val): ?string
+    {
+        if (null === $val || '' === $val) {
+            return null;
+        }
+        if (\is_array($val)) {
+            return json_encode($val);
+        }
+
+        return (string) $val;
+    }
+
+    /**
+     * 级联选择按 JSON 结构读写.
+     *
+     * @param mixed $val
+     *
+     * @return mixed
+     */
+    protected function getCascaderAttribute($val)
+    {
+        return $this->getJsonAttribute($val);
+    }
+
+    /**
+     * 级联选择按 JSON 结构读写.
+     *
+     * @param mixed $val
+     *
+     * @return string|null
+     */
+    protected function setCascaderAttribute($val): ?string
+    {
+        return $this->setJsonAttribute($val);
+    }
+
 }

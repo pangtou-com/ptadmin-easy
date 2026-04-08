@@ -53,6 +53,21 @@ class FormDTO
         $this->rules = array_filter($this->getRules(), function ($value, $key) {
             return isset($this->data[$key]);
         }, ARRAY_FILTER_USE_BOTH);
+
+        $availableFields = array_keys($this->rules);
+        $this->messages = array_filter($this->getMessages(), static function ($value, $key) use ($availableFields) {
+            if (!\is_string($key) || '' === trim($key)) {
+                return false;
+            }
+
+            foreach ($availableFields as $field) {
+                if (0 === strpos($key, $field.'.')) {
+                    return true;
+                }
+            }
+
+            return false;
+        }, ARRAY_FILTER_USE_BOTH);
     }
 
     public function getModel()

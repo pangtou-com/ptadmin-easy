@@ -56,9 +56,17 @@ class Validate
 
     protected function initFormDTORule(): void
     {
-        $docx = $this->document->docx();
-        list($rules, $attributes) = $docx->getRules(null !== $this->model ? $this->model->getKey() : null);
-        $this->dto->setAttributes($attributes)->setRules($rules);
+        $resource = $this->document->resource();
+        [$rules, $attributes, $messages] = array_pad(
+            $resource->getRules(null !== $this->model ? $this->model->getKey() : null),
+            3,
+            []
+        );
+        $this->dto
+            ->setAttributes(\is_array($attributes) ? $attributes : [])
+            ->setRules(\is_array($rules) ? $rules : [])
+            ->setMessages(\is_array($messages) ? $messages : []);
+
         if (null !== $this->model) {
             $this->dto->filterRules();
         }

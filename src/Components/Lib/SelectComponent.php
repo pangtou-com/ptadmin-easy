@@ -68,12 +68,20 @@ class SelectComponent extends AbstractComponent
 
             return;
         }
-        if ($field->isSourceDocx()) {
-            $docx = $field->getOptionDocx();
-            if (null === $docx) {
+        if ($field->isSourceResource()) {
+            $resource = $field->getOptionResource();
+            if (null === $resource) {
                 return;
             }
-            $component = $docx->getField($this->filed->getMetadata('extends.value'));
+            $valueField = (string) $this->filed->getMetadata('extends.value', $resource->getPrimaryKey());
+            if ($valueField === $resource->getPrimaryKey()) {
+                $this->column_type = 'integer';
+                $this->args = [false, true];
+
+                return;
+            }
+
+            $component = $resource->getField($valueField);
             if (null === $component) {
                 return;
             }

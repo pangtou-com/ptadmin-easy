@@ -17,6 +17,7 @@ namespace PTAdmin\Easy\Components\Lib;
 
 use PTAdmin\Easy\Components\AbstractComponent;
 use PTAdmin\Easy\Contracts\IComponent;
+use PTAdmin\Easy\Easy;
 use PTAdmin\Easy\Exceptions\EasyException;
 
 class LinkComponent extends AbstractComponent
@@ -24,13 +25,31 @@ class LinkComponent extends AbstractComponent
     /** @var IComponent 关联字段的组件对象 */
     private $component;
 
+    /** @var string|null 关联字段不存在时的兜底存储类型 */
+    private $columnType;
+
+    /** @var array<int, mixed> 关联字段不存在时的兜底列参数 */
+    private $columnArguments = [];
+
     public function getColumnType(): string
     {
+        if (null !== $this->component) {
+            return $this->component->getColumnType();
+        }
+
+        if (null !== $this->columnType) {
+            return $this->columnType;
+        }
+
         return $this->component->getColumnType();
     }
 
     public function getColumnArguments(): array
     {
+        if (null === $this->component) {
+            return $this->columnArguments;
+        }
+
         $args = $this->component->getColumnArguments();
         array_shift($args);
         array_unshift($args, $this->filed->getName());
@@ -40,17 +59,25 @@ class LinkComponent extends AbstractComponent
 
     protected function initialize(): void
     {
-        $extends = $this->filed->getMetadata('extends');
+        $extends = $this->filed->getRelation();
+        $resource = $extends['table'] === $this->filed->getResource()->getRawTable()
+            ? $this->filed->getResource()
+            : Easy::schema($extends['table'])->raw();
 
-        if ($extends['table'] === $this->filed->getDocx()->getRawTable()) {
-            if (null === ($field = $this->filed->getDocx()->getField($extends['value']))) {
-                throw new EasyException("关联文档：[{$extends['table']}]中不存在关联字段：{$extends['value']}");
-            }
+        if ($extends['value'] === $resource->getPrimaryKey()) {
+            // 关联字段使用目标资源主键时，无需在 schema 中重复声明 id 字段。
+            $this->columnType = 'integer';
+            $this->columnArguments = [$this->filed->getName(), false, true];
+
+            return;
+        }
+
+        if (null !== ($field = $resource->getField($extends['value']))) {
             $this->component = $field->getComponent();
 
             return;
         }
-        // TODO 如果不在当前文档中需要查询文档对象
+
         throw new EasyException("关联文档：[{$extends['table']}]中不存在关联字段：{$extends['value']}");
     }
 }

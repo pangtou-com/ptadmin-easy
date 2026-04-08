@@ -46,8 +46,8 @@
     "key": "constant.status",
     "intro": "这个配置来源与laravel的系统配置信息，配置个格式与options一致"
 }, "extends1":  {
-    "type": "docx",
-    "table": "docx",
+    "type": "resource",
+    "table": "articles",
     "label": "展示的值",
     "value": "读取的值",
     "intro": "这个配置来源与laravel的系统配置信息，配置个格式与options一致"
@@ -57,5 +57,4 @@
     "intro": "这个配置来源与laravel的系统配置信息，配置个格式与options一致"
 }}
 ```
-
 

@@ -15,10 +15,10 @@ declare(strict_types=1);
 
 namespace PTAdmin\Easy\Engine\Schema;
 
-use PTAdmin\Easy\Contracts\IDocx;
-use PTAdmin\Easy\Engine\Docx\Common;
-use PTAdmin\Easy\Engine\Docx\Docx;
+use PTAdmin\Easy\Contracts\IResource;
 use PTAdmin\Easy\Engine\Model\Document;
+use PTAdmin\Easy\Engine\Resource\ResourceDefinition;
+use PTAdmin\Easy\Engine\Resource\ResourceNamespace;
 use PTAdmin\Easy\Exceptions\EasyException;
 
 /**
@@ -29,14 +29,14 @@ class Schema
     use SchemaHandle;
     protected $model;
 
-    public function __construct($docx, string $module = '')
+    public function __construct($resource, string $module = '')
     {
-        if ($docx instanceof IDocx) {
-            $this->model = $docx;
+        if ($resource instanceof IResource) {
+            $this->model = $resource;
 
             return;
         }
-        $this->model = Docx::make($docx, $module);
+        $this->model = ResourceDefinition::make($resource, $module);
     }
 
     public function create(): self
@@ -58,7 +58,7 @@ class Schema
         return $this;
     }
 
-    public function update(string $docxName = ''): void
+    public function update(string $resourceName = ''): void
     {
         throw new EasyException('暂不支持更新操作');
     }
@@ -79,15 +79,15 @@ class Schema
      */
     public function forceCreate(): self
     {
-        $docx = $this->getModel();
-        if ($this->tableExists($docx->getRawTable())) {
-            $this->dropTable($docx->getRawTable());
+        $resource = $this->getModel();
+        if ($this->tableExists($resource->getRawTable())) {
+            $this->dropTable($resource->getRawTable());
         }
 
         return $this->create();
     }
 
-    public function getModel(): IDocx
+    public function getModel(): IResource
     {
         return $this->model;
     }
@@ -97,7 +97,8 @@ class Schema
      */
     public function save(): void
     {
-        $document = new Document(Docx::make('docx', Common::INTERNAL_NAMESPACE));
+        // 历史基础表资源仍使用内部 legacy 名称 `docx` 挂载。
+        $document = new Document(ResourceDefinition::make('docx', ResourceNamespace::INTERNAL_NAMESPACE));
 
         $document->storeAndSaveMany($this->getModel()->toArray());
     }

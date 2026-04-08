@@ -16,7 +16,7 @@ declare(strict_types=1);
 namespace PTAdmin\Easy\Engine\Model;
 
 use Illuminate\Database\Eloquent\Model;
-use PTAdmin\Easy\Contracts\IDocx;
+use PTAdmin\Easy\Contracts\IResource;
 
 class EasyModel extends Model
 {
@@ -24,8 +24,8 @@ class EasyModel extends Model
     protected static $modelsShouldPreventLazyLoading = true;
     protected $hidden = ['password', 'remember_token'];
 
-    /** @var IDocx 文档管理对象 */
-    protected $docx;
+    /** @var IResource 当前模型绑定的资源定义 */
+    protected $resource;
     protected $document;
 
     public function setAttribute($key, $value)
@@ -50,18 +50,18 @@ class EasyModel extends Model
     public function newInstance($attributes = [], $exists = false): self
     {
         $model = parent::newInstance($attributes, $exists);
-        $model->docx = $this->docx;
+        $model->resource = $this->resource;
         $model->document = $this->document;
 
         return $model;
     }
 
-    public static function make(IDocx $docx, $document): self
+    public static function make(IResource $resource, $document): self
     {
         $instance = new static();
-        $instance->docx = $docx;
+        $instance->resource = $resource;
         $instance->document = $document;
-        $instance->setTable($docx->getRawTable());
+        $instance->setTable($resource->getRawTable());
 
         return $instance;
     }
@@ -72,8 +72,8 @@ class EasyModel extends Model
         foreach ($attributes as $key => $value) {
             $attributes[$key] = $this->getAttribute($key);
         }
-        if ($this->docx instanceof IDocx) {
-            foreach ($this->docx->getAppends() as $key => $val) {
+        if ($this->resource instanceof IResource) {
+            foreach ($this->resource->getAppends() as $key => $val) {
                 $attributes[$key] = $this->getAppendValue($key);
             }
         }
@@ -115,11 +115,11 @@ class EasyModel extends Model
 
     public function getFillable(): array
     {
-        if (null === $this->docx) {
+        if (null === $this->resource) {
             return parent::getFillable();
         }
 
-        return $this->docx->getFillable();
+        return $this->resource->getFillable();
     }
 
     public function getCreatedAtAttribute($value)

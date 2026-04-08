@@ -14,3 +14,5 @@ declare(strict_types=1);
  */
 
 uses(\PTAdmin\Easy\Tests\TestCase::class)->in('Feature', 'Unit');
+
+require_once __DIR__.'/Support/RuntimeTestSupport.php';

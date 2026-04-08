@@ -19,8 +19,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use PTAdmin\Easy\Contracts\IDocxField;
-use PTAdmin\Easy\Engine\Docx\Docx;
+use PTAdmin\Easy\Contracts\IResourceField;
+use PTAdmin\Easy\Engine\Resource\ResourceDefinition;
 
 /**
  * 模块数据表处理.
@@ -52,16 +52,16 @@ trait SchemaHandle
     /**
      * 创建数据表.
      *
-     * @param Docx $docx
+     * @param ResourceDefinition $resource
      */
-    protected function createTable(Docx $docx): void
+    protected function createTable(ResourceDefinition $resource): void
     {
-        Schema::create($docx->getRawTable(), function (Blueprint $table) use ($docx): void {
-            $table->increments($docx->getPrimaryKey());
-            foreach ($docx->getFields() as $field) {
+        Schema::create($resource->getRawTable(), function (Blueprint $table) use ($resource): void {
+            $table->increments($resource->getPrimaryKey());
+            foreach ($resource->getFields() as $field) {
                 $this->createField($field, $table);
             }
-            if ($docx->allowRecycle()) {
+            if ($resource->allowRecycle()) {
                 $table->integer('deleted_at')->unsigned()->nullable()->default(null);
             }
             $table->integer(Model::CREATED_AT)->unsigned()->default(0);
@@ -82,10 +82,10 @@ trait SchemaHandle
     /**
      * 创建表字段.
      *
-     * @param IDocxField $field
+     * @param IResourceField $field
      * @param Blueprint  $table
      */
-    protected function createField(IDocxField $field, Blueprint $table): void
+    protected function createField(IResourceField $field, Blueprint $table): void
     {
         $component = $field->getComponent();
 
@@ -106,5 +106,17 @@ trait SchemaHandle
         if ($field->exists()) {
             $column->change();
         }
+
+        if (1 === (int) $field->getMetadata('is_unique', 0) && !$field->exists()) {
+            $table->unique($field->getName(), $this->getUniqueIndexName($field->getResource()->getRawTable(), $field->getName()));
+        }
+    }
+
+    /**
+     * 生成唯一索引名称.
+     */
+    protected function getUniqueIndexName(string $tableName, string $fieldName): string
+    {
+        return "{$tableName}_{$fieldName}_unique";
     }
 }

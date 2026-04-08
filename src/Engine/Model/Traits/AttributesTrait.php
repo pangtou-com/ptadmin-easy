@@ -30,7 +30,7 @@ trait AttributesTrait
      */
     public function setMutatedAttributeValue($model, $key, $val)
     {
-        $field = $this->docx->getField($key);
+        $field = $this->resource->getField($key);
         if (null === $field) {
             return $val;
         }
@@ -56,7 +56,7 @@ trait AttributesTrait
      */
     public function getMutatedAttributeValue($model, $key, $val)
     {
-        $field = $this->docx->getField($key);
+        $field = $this->resource->getField($key);
         if (null === $field) {
             return $val;
         }
@@ -82,7 +82,7 @@ trait AttributesTrait
      */
     public function getAppendsValue($model)
     {
-        return $this->docx->getAppendsValue($model);
+        return $this->resource->getAppendsValue($model);
     }
 
     /**

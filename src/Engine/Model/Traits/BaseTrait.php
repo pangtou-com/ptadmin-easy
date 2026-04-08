@@ -29,7 +29,7 @@ trait BaseTrait
 
     public function find($id)
     {
-        return $this->newModel()->newQuery()->find($id);
+        return $this->findRecord($id);
     }
 
     /**
@@ -55,13 +55,18 @@ trait BaseTrait
      */
     public function lists(int $limit = 0): array
     {
-        return $this->model = $this->query()->limit($limit)->get()->toArray();
+        $query = $this->query();
+        if ($limit > 0) {
+            $query->limit($limit);
+        }
+
+        return $this->model = $query->get()->toArray();
     }
 
     /**
      * 获取当前的操作模型或查询对象，用于修改数据.
      *
-     * @return null|\Illuminate\Database\Eloquent\Builder|\PTAdmin\Easy\Engine\Model\EasyModel|\PTAdmin\Easy\Engine\Model\EasyModel[]
+     * @return null|mixed
      */
     protected function getEditModel()
     {
@@ -83,7 +88,7 @@ trait BaseTrait
      */
     protected function track($model, $type = 'create'): void
     {
-        if (!$this->docx()->trackChanges()) {
+        if (!$this->resource()->trackChanges()) {
             return;
         }
     }

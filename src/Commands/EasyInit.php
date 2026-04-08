@@ -18,7 +18,7 @@ namespace PTAdmin\Easy\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use PTAdmin\Easy\Easy;
-use PTAdmin\Easy\Engine\Docx\Common;
+use PTAdmin\Easy\Engine\Resource\ResourceNamespace;
 
 class EasyInit extends Command
 {
@@ -27,25 +27,25 @@ class EasyInit extends Command
 
     public function handle(): int
     {
-        $docxLists = ['docx', 'docx_field', 'docx_log'];
-        $docx = [];
+        $resourceSchemas = [];
+        $resourceTables = ['docx', 'docx_field', 'docx_log'];
         $this->info('开始加载模块文件...');
-        foreach ($docxLists as $item) {
-            $docx[$item] = Easy::docx($item, Common::INTERNAL_NAMESPACE);
+        foreach ($resourceTables as $item) {
+            $resourceSchemas[$item] = Easy::schema($item, ResourceNamespace::INTERNAL_NAMESPACE)->raw();
         }
 
         $this->info('模块文件加载完成, 开始初始化数据库表结构...');
-        foreach ($docx as $key => $item) {
+        foreach ($resourceSchemas as $key => $item) {
             $this->info("数据表：【{$key}】创建中...");
-            $docx[$key] = Easy::schema($item)->forceCreate();
+            $resourceSchemas[$key] = Easy::table($item)->forceCreate();
         }
 
         $this->info('数据库表结构初始化完成, 开始初始化数据...');
         sleep(1);
 
         try {
-            DB::transaction(function () use ($docx): void {
-                foreach ($docx as $item) {
+            DB::transaction(function () use ($resourceSchemas): void {
+                foreach ($resourceSchemas as $item) {
                     $item->save();
                 }
             });

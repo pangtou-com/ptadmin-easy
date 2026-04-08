@@ -19,7 +19,7 @@ use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Types\Type;
 use PTAdmin\Easy\Components\Extend\TinyInteger;
 use PTAdmin\Easy\Contracts\IComponent;
-use PTAdmin\Easy\Contracts\IDocxField;
+use PTAdmin\Easy\Contracts\IResourceField;
 
 abstract class AbstractComponent implements IComponent
 {
@@ -41,13 +41,13 @@ abstract class AbstractComponent implements IComponent
     /** @var bool 是否存储为数字类型 */
     protected $number = false;
 
-    /** @var IDocxField 字段类型 */
+    /** @var IResourceField 字段类型 */
     protected $filed;
 
     /**
-     * @param IDocxField $field
+     * @param IResourceField $field
      */
-    public function __construct(IDocxField $field)
+    public function __construct(IResourceField $field)
     {
         if (!Type::hasType('tinyinteger')) {
             try {

@@ -51,7 +51,11 @@ trait SelectComponentTrait
             return $this->setCheckboxAttribute($value);
         }
 
-        return $value;
+        if (null === $value || '' === $value) {
+            return null;
+        }
+
+        return (string) $value;
     }
 
     protected function getCheckboxAttribute($value)
@@ -75,6 +79,6 @@ trait SelectComponentTrait
             return ','.implode(',', $value).',';
         }
 
-        return ','.trim($value, ',').',';
+        return ','.trim((string) $value, ',').',';
     }
 }

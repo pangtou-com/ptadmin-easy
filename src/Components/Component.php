@@ -25,7 +25,7 @@ use PTAdmin\Easy\Components\Lib\NumberComponent;
 use PTAdmin\Easy\Components\Lib\SelectComponent;
 use PTAdmin\Easy\Components\Lib\TextComponent;
 use PTAdmin\Easy\Contracts\IComponent;
-use PTAdmin\Easy\Contracts\IDocxField;
+use PTAdmin\Easy\Contracts\IResourceField;
 use PTAdmin\Easy\Exceptions\EasyException;
 
 /**
@@ -63,6 +63,8 @@ class Component
         'radio' => ['class' => SelectComponent::class, 'label' => '单选框', 'group' => 'select', 'append' => true, 'relation' => true],
         'checkbox' => ['class' => SelectComponent::class, 'label' => '多选选框', 'group' => 'select', 'append' => true, 'relation' => true],
         'select' => ['class' => SelectComponent::class, 'label' => '下拉选择', 'group' => 'select', 'append' => true, 'relation' => true],
+        'switch' => ['class' => SelectComponent::class, 'label' => '开关', 'group' => 'select', 'append' => true],
+        'cascader' => ['class' => JsonComponent::class, 'label' => '级联选择', 'group' => 'select'],
 
         // 时间类型组件
         'date' => ['class' => DateComponent::class, 'label' => '日期选择', 'group' => 'date'],
@@ -72,6 +74,7 @@ class Component
         // 功能组件
         'block' => ['class' => BlockComponent::class, 'label' => '功能块', 'is_virtual' => true, 'group' => 'func'],
         'link' => ['class' => LinkComponent::class, 'label' => '链接表', 'group' => 'func', 'append' => true, 'relation' => true],
+        'resource' => ['class' => FileComponent::class, 'label' => '资源', 'group' => 'file'],
         'json' => ['class' => JsonComponent::class, 'label' => 'Json', 'group' => 'func'],
         'table' => ['class' => JsonComponent::class, 'label' => '表格', 'is_virtual' => true, 'group' => 'func', 'relation' => true],
         'mirror' => ['class' => JsonComponent::class, 'label' => '镜像数据', 'is_virtual' => true, 'group' => 'func'],
@@ -81,11 +84,11 @@ class Component
     /**
      * 构建组件对象.
      *
-     * @param IDocxField $field
+     * @param IResourceField $field
      *
      * @return IComponent
      */
-    public function build(IDocxField $field): IComponent
+    public function build(IResourceField $field): IComponent
     {
         $component = self::getComponent($field->getType());
         if (null === $component) {

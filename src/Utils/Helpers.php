@@ -30,7 +30,7 @@ function add_hook($event, $callback): void
  *
  * @return string
  */
-function get_table_name(string $tableName): string
+function get_resource_table(string $tableName): string
 {
     $prefix = config('database.prefix', '');
     if ('' === $prefix) {
