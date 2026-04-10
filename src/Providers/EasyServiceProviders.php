@@ -36,10 +36,6 @@ class EasyServiceProviders extends ServiceProvider
     public function boot(): void
     {
         // $this->publishing();
-
-        $this->commands([
-            \PTAdmin\Easy\Commands\EasyInit::class,
-        ]);
     }
 
     public function publishing(): void
