@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PTAdmin\Easy\Core\Query;
 
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use PTAdmin\Easy\Core\Schema\Definition\FieldDefinition;
 use PTAdmin\Easy\Core\Runtime\ExecutionContext;
@@ -673,7 +674,7 @@ class QueryEngine
 
         $name = $this->relationFieldName($field);
         $kind = (string) ($relation['kind'] ?? $relation['relation_kind'] ?? '');
-        if ('belongsTo' === $kind && str_ends_with($name, '_id')) {
+        if ('belongsTo' === $kind && Str::endsWith($name, '_id')) {
             $alias = substr($name, 0, -3);
             if (\is_string($alias) && '' !== $alias) {
                 return $alias;
@@ -1343,7 +1344,7 @@ class QueryEngine
      */
     private function qualifyRelationColumn(string $field, ?string $tableAlias = null): string
     {
-        if (null === $tableAlias || str_contains($field, '.')) {
+        if (null === $tableAlias || Str::contains($field, '.')) {
             return $field;
         }
 

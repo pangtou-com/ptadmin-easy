@@ -488,7 +488,7 @@ it('resolves relation display text for resource-backed select and link fields', 
     DB::enableQueryLog();
     $listed = Easy::doc($articleTable)->lists();
     $relationQueryCount = collect(DB::getQueryLog())->filter(function (array $entry) use ($categoryTable): bool {
-        return str_contains((string) ($entry['query'] ?? ''), $categoryTable);
+        return false !== strpos((string) ($entry['query'] ?? ''), $categoryTable);
     })->count();
     DB::disableQueryLog();
 
