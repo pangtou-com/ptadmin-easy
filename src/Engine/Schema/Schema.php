@@ -42,7 +42,7 @@ class Schema
     public function create(): self
     {
         if ($this->tableExists($this->getModel()->getRawTable())) {
-            throw new EasyException('数据表已存在');
+            throw new EasyException(__('ptadmin-easy::messages.errors.schema_table_exists'));
         }
 
         try {
@@ -60,7 +60,7 @@ class Schema
 
     public function update(string $resourceName = ''): void
     {
-        throw new EasyException('暂不支持更新操作');
+        throw new EasyException(__('ptadmin-easy::messages.errors.schema_update_not_supported'));
     }
 
     /**
@@ -70,7 +70,7 @@ class Schema
      */
     public function rename($name): void
     {
-        throw new EasyException('暂不支持重命名操作');
+        throw new EasyException(__('ptadmin-easy::messages.errors.schema_rename_not_supported'));
     }
 
     /**

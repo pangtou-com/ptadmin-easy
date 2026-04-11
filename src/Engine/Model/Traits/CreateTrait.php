@@ -145,7 +145,7 @@ trait CreateTrait
         $foreignKey = (string) ($relation['foreign_key'] ?? '');
         $localKey = (string) ($relation['local_key'] ?? $this->resource()->getPrimaryKey());
         if ('' === $table || '' === $foreignKey || '' === $localKey) {
-            throw new EasyException("字段【{$field->getName()}】的 hasMany 关系配置不完整。");
+            throw new EasyException(__('ptadmin-easy::messages.errors.has_many_relation_incomplete', ['field' => $field->getName()]));
         }
 
         $model = $this->model;
@@ -159,7 +159,10 @@ trait CreateTrait
             : Easy::schema($table)->raw();
 
         if (null === $resource->getField($foreignKey)) {
-            throw new EasyException("关联资源【{$table}】缺少外键字段【{$foreignKey}】。");
+            throw new EasyException(__('ptadmin-easy::messages.errors.relation_resource_missing_foreign_key', [
+                'table' => $table,
+                'foreign_key' => $foreignKey,
+            ]));
         }
 
         $rows = $this->normalizeManyRows($data);
@@ -198,7 +201,7 @@ trait CreateTrait
         $foreignKey = (string) ($relation['foreign_key'] ?? '');
         $localKey = (string) ($relation['local_key'] ?? $this->resource()->getPrimaryKey());
         if ('' === $table || '' === $foreignKey || '' === $localKey) {
-            throw new EasyException("字段【{$field->getName()}】的 hasOne 关系配置不完整。");
+            throw new EasyException(__('ptadmin-easy::messages.errors.has_one_relation_incomplete', ['field' => $field->getName()]));
         }
 
         $model = $this->model;
@@ -217,7 +220,10 @@ trait CreateTrait
             : Easy::schema($table)->raw();
 
         if (null === $resource->getField($foreignKey)) {
-            throw new EasyException("关联资源【{$table}】缺少外键字段【{$foreignKey}】。");
+            throw new EasyException(__('ptadmin-easy::messages.errors.relation_resource_missing_foreign_key', [
+                'table' => $table,
+                'foreign_key' => $foreignKey,
+            ]));
         }
 
         $row[$foreignKey] = $localValue;
@@ -310,7 +316,7 @@ trait CreateTrait
         }
 
         if (!\is_array($data)) {
-            throw new EasyException("字段【{$fieldName}】的 hasOne 数据必须为对象。");
+            throw new EasyException(__('ptadmin-easy::messages.errors.has_one_must_object', ['field' => $fieldName]));
         }
 
         if (0 === \count($data)) {
@@ -326,6 +332,6 @@ trait CreateTrait
             return $data[0];
         }
 
-        throw new EasyException("字段【{$fieldName}】的 hasOne 数据只能提交一条记录。");
+        throw new EasyException(__('ptadmin-easy::messages.errors.has_one_single_only', ['field' => $fieldName]));
     }
 }

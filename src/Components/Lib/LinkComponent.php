@@ -78,6 +78,9 @@ class LinkComponent extends AbstractComponent
             return;
         }
 
-        throw new EasyException("关联文档：[{$extends['table']}]中不存在关联字段：{$extends['value']}");
+        throw new EasyException(__('ptadmin-easy::messages.errors.link_relation_field_missing', [
+            'table' => $extends['table'],
+            'field' => $extends['value'],
+        ]));
     }
 }

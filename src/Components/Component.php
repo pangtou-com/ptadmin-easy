@@ -92,14 +92,18 @@ class Component
     {
         $component = self::getComponent($field->getType());
         if (null === $component) {
-            throw new EasyException("【{$field->getType()}】组件不存在");
+            throw new EasyException(__('ptadmin-easy::messages.errors.component_not_exists', ['type' => $field->getType()]));
         }
         $component = $component['class'];
 
         try {
             return new $component($field);
         } catch (\Exception $exception) {
-            throw new EasyException("字段【{$field->getName()}】实例化组件【{$field->getType()}】失败，错误信息：{$exception->getMessage()}");
+            throw new EasyException(__('ptadmin-easy::messages.errors.component_build_failed', [
+                'field' => $field->getName(),
+                'type' => $field->getType(),
+                'message' => $exception->getMessage(),
+            ]));
         }
     }
 
@@ -112,7 +116,7 @@ class Component
     public function insertComponent(string $type, string $component): void
     {
         if (isset(self::$COMPONENTS[$type])) {
-            throw new EasyException("【{$type}】组件已存在");
+            throw new EasyException(__('ptadmin-easy::messages.errors.component_exists', ['type' => $type]));
         }
         (new self())->checkInstallComponent($component);
         self::$COMPONENTS[$type] = $component;
@@ -139,7 +143,12 @@ class Component
      */
     public function getComponent(string $type): ?array
     {
-        return self::$COMPONENTS[$type] ?? null;
+        $component = self::$COMPONENTS[$type] ?? null;
+        if (null === $component) {
+            return null;
+        }
+
+        return $this->translateComponentDefinition($type, $component);
     }
 
     /**
@@ -193,6 +202,7 @@ class Component
             if (null !== $group && $group !== $g) {
                 continue;
             }
+            $component = $this->translateComponentDefinition($type, $component);
             $component['value'] = $type;
             $results[] = $component;
         }
@@ -263,10 +273,24 @@ class Component
     private function checkInstallComponent($component): void
     {
         if (!isset($component['class']) || (!isset($component['label']) && !isset($component['label_key']))) {
-            throw new EasyException('组件配置错误');
+            throw new EasyException(__('ptadmin-easy::messages.errors.component_config_invalid'));
         }
         if (!class_exists($component['class'])) {
-            throw new EasyException('组件类型不可使用');
+            throw new EasyException(__('ptadmin-easy::messages.errors.component_type_invalid'));
         }
+    }
+
+    /**
+     * @param array<string, mixed> $component
+     *
+     * @return array<string, mixed>
+     */
+    private function translateComponentDefinition(string $type, array $component): array
+    {
+        if (isset($component['label'])) {
+            $component['label'] = __('ptadmin-easy::messages.components.'.$type);
+        }
+
+        return $component;
     }
 }

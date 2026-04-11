@@ -516,7 +516,9 @@ class Document
         }
 
         if ('restrict' === $policy) {
-            throw new EasyException("字段【{$fieldName}】存在关联子记录，当前删除策略为 restrict，无法删除主记录。");
+            throw new EasyException(__('ptadmin-easy::messages.errors.relation_restrict', [
+                'field' => $fieldName,
+            ]));
         }
 
         if ('set_null' === $policy) {
@@ -544,10 +546,16 @@ class Document
         $localValue = $context['local_value'];
         $field = $childDocument->resource()->getField($foreignKey);
         if (null === $field) {
-            throw new EasyException("字段【{$fieldName}】的子资源缺少外键字段【{$foreignKey}】。");
+            throw new EasyException(__('ptadmin-easy::messages.errors.child_missing_foreign_key', [
+                'field' => $fieldName,
+                'foreign_key' => $foreignKey,
+            ]));
         }
         if (null !== $field->required()) {
-            throw new EasyException("字段【{$fieldName}】配置了 set_null 删除策略，但子资源外键字段【{$foreignKey}】不允许为空。");
+            throw new EasyException(__('ptadmin-easy::messages.errors.set_null_requires_nullable', [
+                'field' => $fieldName,
+                'foreign_key' => $foreignKey,
+            ]));
         }
 
         $payload = [
@@ -965,7 +973,10 @@ class Document
         if (null !== $childId && '' !== (string) $childId) {
             $existingRecord = $existing[(string) $childId] ?? null;
             if (null === $existingRecord) {
-                throw new EasyException("字段【{$fieldName}】提交的子记录【{$childId}】不存在或不属于当前主记录。");
+                throw new EasyException(__('ptadmin-easy::messages.errors.child_record_invalid', [
+                    'field' => $fieldName,
+                    'id' => $childId,
+                ]));
             }
 
             unset($row[$childPrimaryKey]);
@@ -1011,7 +1022,10 @@ class Document
             if (null !== $childId && '' !== (string) $childId) {
                 $existingRecord = $existing[(string) $childId] ?? null;
                 if (null === $existingRecord) {
-                    throw new EasyException("字段【{$fieldName}】提交的子记录【{$childId}】不存在或不属于当前主记录。");
+                    throw new EasyException(__('ptadmin-easy::messages.errors.child_record_invalid', [
+                        'field' => $fieldName,
+                        'id' => $childId,
+                    ]));
                 }
 
                 unset($row[$childPrimaryKey]);
@@ -1065,7 +1079,7 @@ class Document
         }
 
         if (!\is_array($payload)) {
-            throw new EasyException("字段【{$fieldName}】的 hasMany 数据必须为数组。");
+            throw new EasyException(__('ptadmin-easy::messages.errors.has_many_must_array', ['field' => $fieldName]));
         }
 
         if (0 === \count($payload)) {
@@ -1080,7 +1094,10 @@ class Document
                 continue;
             }
 
-            throw new EasyException("字段【{$fieldName}】的第 ".($index + 1).' 项 hasMany 数据必须为对象数组。');
+            throw new EasyException(__('ptadmin-easy::messages.errors.has_many_item_must_object', [
+                'field' => $fieldName,
+                'index' => $index + 1,
+            ]));
         }
 
         return array_values($rows);
@@ -1105,7 +1122,7 @@ class Document
         }
 
         if (!\is_array($payload)) {
-            throw new EasyException("字段【{$fieldName}】的 hasOne 数据必须为对象。");
+            throw new EasyException(__('ptadmin-easy::messages.errors.has_one_must_object', ['field' => $fieldName]));
         }
 
         if (0 === \count($payload)) {
@@ -1121,7 +1138,7 @@ class Document
             return $payload[0];
         }
 
-        throw new EasyException("字段【{$fieldName}】的 hasOne 数据只能提交一条记录。");
+        throw new EasyException(__('ptadmin-easy::messages.errors.has_one_single_only', ['field' => $fieldName]));
     }
 
     /**
@@ -1137,7 +1154,7 @@ class Document
         $foreignKey = (string) ($relation['foreign_key'] ?? '');
         $localKey = (string) ($relation['local_key'] ?? $this->resource->getPrimaryKey());
         if ('' === $table || '' === $foreignKey || '' === $localKey) {
-            throw new EasyException("字段【{$fieldName}】的 hasMany 关系配置不完整。");
+            throw new EasyException(__('ptadmin-easy::messages.errors.has_many_relation_incomplete', ['field' => $fieldName]));
         }
 
         $resource = $table === $this->resource->getRawTable()
@@ -1145,7 +1162,10 @@ class Document
             : Easy::schema($table)->raw();
 
         if (null === $resource->getField($foreignKey)) {
-            throw new EasyException("关联资源【{$table}】缺少外键字段【{$foreignKey}】。");
+            throw new EasyException(__('ptadmin-easy::messages.errors.relation_resource_missing_foreign_key', [
+                'table' => $table,
+                'foreign_key' => $foreignKey,
+            ]));
         }
 
         return [

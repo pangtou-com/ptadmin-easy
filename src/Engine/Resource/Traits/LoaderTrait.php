@@ -37,7 +37,10 @@ trait LoaderTrait
     {
         $data = @json_decode(@file_get_contents($filepath), true);
         if (JSON_ERROR_NONE !== json_last_error()) {
-            throw new EasyException("文件【{$filepath}】内容错误:".json_last_error_msg());
+            throw new EasyException(__('ptadmin-easy::messages.errors.file_content_invalid', [
+                'file' => $filepath,
+                'message' => json_last_error_msg(),
+            ]));
         }
         $this->metadata = $data;
         if (method_exists($this, 'after_loading')) {
@@ -58,7 +61,7 @@ trait LoaderTrait
     public function loadThroughMetadata(array $metadata): self
     {
         if (!isset($metadata['name'], $metadata['module'])) {
-            throw new EasyException('Schema name and module are required.');
+            throw new EasyException(__('ptadmin-easy::messages.errors.metadata_required'));
         }
         $this->resource = $metadata['name'];
         $this->module = $metadata['module'];

@@ -35,7 +35,9 @@ class EasyServiceProviders extends ServiceProvider
 
     public function boot(): void
     {
-        // $this->publishing();
+        $this->loadTranslationsFrom(__DIR__.'/../../lang', 'ptadmin-easy');
+        $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+        $this->publishing();
     }
 
     public function publishing(): void
@@ -44,6 +46,20 @@ class EasyServiceProviders extends ServiceProvider
             $this->publishes([
                 __DIR__.'/../../config/easy.php' => config_path('easy.php'),
             ], 'ptadmin-easy');
+            $this->publishes([
+                __DIR__.'/../../config/easy.php' => config_path('easy.php'),
+            ], 'config');
+
+            $this->publishes([
+                __DIR__.'/../../database/migrations' => database_path('migrations'),
+            ], 'ptadmin-easy-migrations');
+            $this->publishes([
+                __DIR__.'/../../database/migrations' => database_path('migrations'),
+            ], 'migrations');
+
+            $this->publishes([
+                __DIR__.'/../../lang' => resource_path('lang/vendor/ptadmin-easy'),
+            ], 'ptadmin-easy-lang');
         }
     }
 }
