@@ -43,23 +43,29 @@ class EasyServiceProviders extends ServiceProvider
     public function publishing(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->publishes([
+            $configPaths = [
                 __DIR__.'/../../config/easy.php' => config_path('easy.php'),
-            ], 'ptadmin-easy');
-            $this->publishes([
-                __DIR__.'/../../config/easy.php' => config_path('easy.php'),
-            ], 'config');
-
-            $this->publishes([
+            ];
+            $migrationPaths = [
                 __DIR__.'/../../database/migrations' => database_path('migrations'),
-            ], 'ptadmin-easy-migrations');
-            $this->publishes([
-                __DIR__.'/../../database/migrations' => database_path('migrations'),
-            ], 'migrations');
-
-            $this->publishes([
+            ];
+            $langPaths = [
                 __DIR__.'/../../lang' => resource_path('lang/vendor/ptadmin-easy'),
-            ], 'ptadmin-easy-lang');
+            ];
+
+            $this->publishes($configPaths, 'ptadmin');
+            $this->publishes($configPaths, 'ptadmin-config');
+            $this->publishes($configPaths, 'ptadmin-easy');
+            $this->publishes($configPaths, 'config');
+
+            $this->publishes($migrationPaths, 'ptadmin');
+            $this->publishes($migrationPaths, 'ptadmin-migrations');
+            $this->publishes($migrationPaths, 'ptadmin-easy-migrations');
+            $this->publishes($migrationPaths, 'migrations');
+
+            $this->publishes($langPaths, 'ptadmin');
+            $this->publishes($langPaths, 'ptadmin-lang');
+            $this->publishes($langPaths, 'ptadmin-easy-lang');
         }
     }
 }

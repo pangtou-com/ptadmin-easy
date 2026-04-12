@@ -12,12 +12,14 @@ composer require ptadmin/easy
 > 发布相关迁移文件至项目目录中
 
 ```shell
-# 发布全部文件
-php artisan vendor:publish --provider="PTAdmin\Easy\Providers\EasyServiceProviders"
+# 发布全部 PTAdmin 资源
+php artisan vendor:publish --tag=ptadmin --force
 # 1、指定发布迁移文件
-php artisan vendor:publish --provider="PTAdmin\Easy\Providers\EasyServiceProviders" --tag="migrations"
+php artisan vendor:publish --tag=ptadmin-migrations --force
 # 2、指定发布配置文件
-php artisan vendor:publish --provider="PTAdmin\Easy\Providers\EasyServiceProviders" --tag="config"
+php artisan vendor:publish --tag=ptadmin-config --force
+# 3、指定发布语言包
+php artisan vendor:publish --tag=ptadmin-lang --force
 ```
 ## 执行迁移
 > 使用 `php artisan migrate` 命令，执行迁移文件生成相关数据表信息
