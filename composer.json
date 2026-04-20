@@ -2,11 +2,22 @@
     "name": "ptadmin/easy",
     "description": "表单模型构建，主要用于模型的创建",
     "license": "Apache-2.0",
-    "keywords": ["HTML", "admin", "Form", "Mod", "低代码平台", "addon", "PTAdmin"],
+    "keywords": [
+        "HTML",
+        "admin",
+        "Form",
+        "Mod",
+        "低代码平台",
+        "addon",
+        "PTAdmin"
+    ],
     "type": "library",
     "homepage": "https://www.pangtou.com",
     "authors": [
-        {"name": "Zane", "email": "873934580@qq.com"}
+        {
+            "name": "Zane",
+            "email": "873934580@qq.com"
+        }
     ],
     "require": {
         "php": "^7.4 || ^8.0",
@@ -41,7 +52,14 @@
         }
     },
     "archive": {
-        "exclude": ["/tests/", "/.github/", "/docs/", "phpunit.xml.dist", ".php_cs.dist.php", "package.json"]
+        "exclude": [
+            "/tests/",
+            "/.github/",
+            "/docs/",
+            "phpunit.xml.dist",
+            ".php_cs.dist.php",
+            "package.json"
+        ]
     },
     "scripts": {
         "phpstan": "./vendor/bin/phpstan.phar analyse src --configuration phpstan.neon",
@@ -59,5 +77,6 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true
         }
-    }
+    },
+    "version": "1.0.6"
 }
