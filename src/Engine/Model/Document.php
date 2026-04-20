@@ -17,6 +17,7 @@ namespace PTAdmin\Easy\Engine\Model;
 
 use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
+use PTAdmin\Easy\Core\Runtime\ExecutionContext;
 use PTAdmin\Easy\Contracts\IResource;
 use PTAdmin\Easy\Easy;
 use PTAdmin\Easy\Engine\Model\Traits\AttributesTrait;
@@ -89,6 +90,9 @@ class Document
     /** @var null|ResourceQueryBuilder */
     protected $query;
 
+    /** @var ExecutionContext|null */
+    protected $context;
+
     public function __construct(IResource $resource)
     {
         $this->resource = $resource;
@@ -116,6 +120,18 @@ class Document
     public function resource(): IResource
     {
         return $this->resource;
+    }
+
+    public function useContext(?ExecutionContext $context = null): self
+    {
+        $this->context = $context;
+
+        return $this;
+    }
+
+    public function currentContext(): ?ExecutionContext
+    {
+        return $this->context;
     }
 
     /**
@@ -771,7 +787,7 @@ class Document
         $childResource = $table === $this->resource->getRawTable()
             ? $this->resource
             : Easy::schema($table)->raw();
-        $childDocument = $childResource->document();
+        $childDocument = $childResource->document()->useContext($this->context);
         $requestedColumns = array_values(array_filter((array) ($options['columns'] ?? []), 'is_string'));
         $requestedOutputColumns = $requestedColumns;
         $stripColumns = [];
@@ -841,7 +857,7 @@ class Document
         $childResource = $table === $this->resource->getRawTable()
             ? $this->resource
             : Easy::schema($table)->raw();
-        $childDocument = $childResource->document();
+        $childDocument = $childResource->document()->useContext($this->context);
         $requestedColumns = array_values(array_filter((array) ($options['columns'] ?? []), 'is_string'));
         $requestedOutputColumns = $requestedColumns;
         if (0 !== \count($requestedColumns) && !\in_array($foreignKey, $requestedColumns, true)) {
@@ -909,7 +925,7 @@ class Document
         $childResource = $table === $this->resource->getRawTable()
             ? $this->resource
             : Easy::schema($table)->raw();
-        $childDocument = $childResource->document();
+        $childDocument = $childResource->document()->useContext($this->context);
         $requestedColumns = array_values(array_filter((array) ($options['columns'] ?? []), 'is_string'));
         $requestedOutputColumns = $requestedColumns;
         if (0 !== \count($requestedColumns) && !\in_array($valueColumn, $requestedColumns, true)) {
@@ -1173,7 +1189,7 @@ class Document
             'foreign_key' => $foreignKey,
             'local_key' => $localKey,
             'local_value' => $record->{$localKey},
-            'document' => $resource->document(),
+            'document' => $resource->document()->useContext($this->context),
             'primary_key' => $resource->getPrimaryKey(),
         ];
     }

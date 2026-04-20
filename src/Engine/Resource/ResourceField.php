@@ -62,6 +62,11 @@ class ResourceField implements IResourceField
 
     public function getComment(): string
     {
+        $help = $this->getMetadata('help');
+        if (\is_string($help) && '' !== trim($help)) {
+            return trim($help);
+        }
+
         return $this->getMetadata('comment', $this->getLabel());
     }
 
@@ -239,7 +244,7 @@ class ResourceField implements IResourceField
 
     public function getDefault()
     {
-        return $this->getMetadata('default');
+        return $this->getMetadata('default', $this->getMetadata('defaultValue'));
     }
 
     public function getMetadata($key = null, $default = null)
@@ -279,6 +284,10 @@ class ResourceField implements IResourceField
 
     public function required(): ?string
     {
+        if (true === (bool) $this->getMetadata('required', false)) {
+            return 'required';
+        }
+
         if (1 === (int) $this->getMetadata('is_required', 0)) {
             return 'required';
         }
@@ -543,24 +552,37 @@ class ResourceField implements IResourceField
     {
         $rules = [];
         $type = $this->getType();
-        $length = $this->getMetadata('length');
+        $length = $this->getMetadata('maxlength', $this->getMetadata('length'));
         $min = $this->getMetadata('min');
         $max = $this->getMetadata('max', $this->getMetadata('extends.max'));
         $pattern = $this->getMetadata('pattern');
 
-        if (\in_array($type, ['number', 'amount'], true)) {
+        if ('number' === $type) {
             $rules[] = 'numeric';
         }
 
-        if (\is_numeric($length) && \in_array($type, ['text', 'textarea', 'password', 'email', 'url', 'color', 'icon', 'editor'], true)) {
+        if (\in_array($type, ['image', 'attachment'], true)) {
+            $rules[] = 'array';
+
+            $limit = $this->getMetadata('limit', $this->getMetadata('extends.limit'));
+            if (\is_numeric($limit) && (int) $limit > 0) {
+                $rules[] = 'max:'.(string) ((int) $limit);
+            }
+        }
+
+        if (\is_numeric($length) && \in_array($type, ['text', 'textarea', 'password', 'color', 'icon_input', 'rich_text', 'time'], true)) {
             $rules[] = 'max:'.(string) $length;
         }
 
-        if (\is_numeric($min) && \in_array($type, ['text', 'textarea', 'password', 'email', 'url', 'color', 'icon', 'editor', 'number', 'amount'], true)) {
+        if (\is_numeric($min) && \in_array($type, ['text', 'textarea', 'password', 'color', 'icon_input', 'rich_text', 'number', 'rate', 'slider'], true)) {
             $rules[] = 'min:'.(string) $min;
         }
 
-        if (\is_numeric($max) && \in_array($type, ['number', 'amount'], true)) {
+        if (\is_numeric($max) && \in_array($type, ['rate', 'slider'], true)) {
+            $rules[] = 'max:'.(string) $max;
+        }
+
+        if ('number' === $type && \is_numeric($max)) {
             $rules[] = 'max:'.(string) $max;
         }
 

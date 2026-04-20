@@ -65,7 +65,7 @@ it('回退时不允许传入草稿版本ID', function (): void {
                 'name' => 'excerpt',
                 'type' => 'text',
                 'label' => '摘要',
-                'length' => 100,
+                'maxlength' => 100,
             ],
         ]),
     ]), ['remark' => 'v2 草稿']);
@@ -92,7 +92,7 @@ it('可以查看指定版本详情并按ID更新草稿', function (): void {
                 'name' => 'excerpt',
                 'type' => 'text',
                 'label' => '摘要',
-                'length' => 120,
+                'maxlength' => 120,
             ],
         ]),
     ]), ['remark' => '草稿已更新']);

@@ -30,7 +30,7 @@ class UpdateAction implements ActionInterface
         return DB::transaction(function () use ($definition, $payload, $context) {
             $id = $payload['id'] ?? null;
             $data = $payload['data'] ?? [];
-            $document = $definition->document();
+            $document = $definition->document()->useContext($context);
             $builder = $document->query();
             $this->applyScope($builder, $definition, $context);
             $model = $builder->where($definition->primaryKey(), $id)->first();

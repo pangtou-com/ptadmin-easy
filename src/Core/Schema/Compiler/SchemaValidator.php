@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace PTAdmin\Easy\Core\Schema\Compiler;
 
+use PTAdmin\Easy\Components\Component;
 use PTAdmin\Easy\Core\Chart\ChartCompiler;
 use PTAdmin\Easy\Core\Chart\Definition\ChartDefinition;
+use PTAdmin\Easy\Core\Support\SensitiveFieldHelper;
 
 /**
  * Schema 校验器.
@@ -24,16 +26,31 @@ final class SchemaValidator
      */
     private const APPEND_TYPES = ['radio', 'checkbox', 'select', 'switch', 'link'];
 
+    /**
+     * 支持敏感字段协议的组件类型。
+     *
+     * @var string[]
+     */
+    private const SENSITIVE_FIELD_TYPES = ['text', 'textarea'];
+
     /** @var ChartCompiler */
     private $chartCompiler;
 
     /** @var SchemaNormalizer */
     private $normalizer;
 
-    public function __construct(?ChartCompiler $chartCompiler = null, ?SchemaNormalizer $normalizer = null)
+    /** @var Component */
+    private $componentManager;
+
+    public function __construct(
+        ?ChartCompiler $chartCompiler = null,
+        ?SchemaNormalizer $normalizer = null,
+        ?Component $componentManager = null
+    )
     {
         $this->chartCompiler = $chartCompiler ?? new ChartCompiler();
         $this->normalizer = $normalizer ?? new SchemaNormalizer();
+        $this->componentManager = $componentManager ?? new Component();
     }
 
     /**
@@ -97,6 +114,9 @@ final class SchemaValidator
                 throw new \InvalidArgumentException('Schema field ['.$name.'] is duplicated.');
             }
 
+            $this->validateFieldType($field, $name, $index);
+            $this->validateSensitiveFieldConfig($field, $name);
+
             $fieldNames[$name] = true;
 
             $appendName = $this->resolveAppendName($field, $name);
@@ -115,6 +135,49 @@ final class SchemaValidator
         }
 
         return $fieldNames;
+    }
+
+    /**
+     * 校验字段类型是否合法。
+     *
+     * 当前要求字段必须显式声明 type，且 type 必须是已注册组件。
+     *
+     * @param array<string, mixed> $field
+     */
+    private function validateFieldType(array $field, string $name, int $index): void
+    {
+        $type = $field['type'] ?? null;
+        if (!\is_string($type) || '' === trim($type)) {
+            throw new \InvalidArgumentException('Schema field ['.$name.'] type is invalid at index ['.$index.'].');
+        }
+
+        if (!$this->componentManager->hasComponent(trim($type))) {
+            throw new \InvalidArgumentException('Schema field ['.$name.'] type ['.trim($type).'] is not supported.');
+        }
+    }
+
+    /**
+     * 校验敏感字段协议是否合法。
+     *
+     * @param array<string, mixed> $field
+     */
+    private function validateSensitiveFieldConfig(array $field, string $name): void
+    {
+        $type = strtolower(trim((string) ($field['type'] ?? 'text')));
+        $secret = SensitiveFieldHelper::isSecret($field);
+        $maskConfig = SensitiveFieldHelper::maskConfigFromMetadata($field);
+
+        if (!$secret && null === $maskConfig) {
+            return;
+        }
+
+        if (!\in_array($type, self::SENSITIVE_FIELD_TYPES, true)) {
+            throw new \InvalidArgumentException('Schema field ['.$name.'] sensitive config is only supported for text/textarea.');
+        }
+
+        if ($secret && null !== $maskConfig) {
+            throw new \InvalidArgumentException('Schema field ['.$name.'] cannot define both secret and mask.');
+        }
     }
 
     /**

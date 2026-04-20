@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PTAdmin\Easy\Core\Support;
 
 use PTAdmin\Easy\Core\Schema\Definition\FieldDefinition;
+use PTAdmin\Easy\Core\Support\SensitiveFieldHelper;
 
 /**
  * 字段类型注册表.
@@ -52,6 +53,17 @@ class FieldTypeRegistry
     {
         $base = $this->get($field->type());
 
+        if (SensitiveFieldHelper::isSecret($field->metadata())) {
+            $base['operators'] = [];
+            $base['filterable'] = false;
+            $base['sortable'] = false;
+            $base['query'] = [
+                'filterable' => false,
+                'sortable' => false,
+                'operators' => [],
+            ];
+        }
+
         return array_merge($base, [
             'type' => $field->type(),
             'name' => $field->name(),
@@ -68,19 +80,27 @@ class FieldTypeRegistry
         return [
             'text' => $this->definition('text', 'string', 'string', ['=', 'like', 'in'], true, true, 'string'),
             'textarea' => $this->definition('text', 'text', 'string', ['like'], true, false, 'string'),
+            'rich_text' => $this->definition('text', 'text', 'string', ['like'], true, false, 'string'),
+            'password' => $this->definition('text', 'string', 'string', ['='], false, false, 'string'),
             'number' => $this->definition('number', 'integer', 'int', ['=', '>', '>=', '<', '<=', 'between', 'in'], true, true, 'int'),
-            'amount' => $this->definition('number', 'integer', 'float', ['=', '>', '>=', '<', '<=', 'between'], true, true, 'float'),
+            'rate' => $this->definition('number', 'tinyinteger', 'int', ['=', '>', '>=', '<', '<=', 'between', 'in'], true, true, 'int'),
+            'slider' => $this->definition('number', 'integer', 'int', ['=', '>', '>=', '<', '<=', 'between', 'in'], true, true, 'int'),
             'radio' => $this->definition('select', 'tinyinteger', 'mixed', ['=', 'in'], true, true, 'mixed'),
             'switch' => $this->definition('select', 'tinyinteger', 'bool', ['=', 'in'], true, true, 'bool'),
             'checkbox' => $this->definition('select', 'string', 'array', ['contains'], true, false, 'array'),
             'select' => $this->definition('select', 'mixed', 'mixed', ['=', 'in', 'contains'], true, true, 'mixed'),
+            'select-tree' => $this->definition('select', 'mixed', 'mixed', ['=', 'in', 'contains'], true, true, 'mixed'),
             'date' => $this->definition('date', 'unsignedInteger', 'string', ['=', '>', '>=', '<', '<=', 'between'], true, true, 'string'),
             'datetime' => $this->definition('date', 'unsignedInteger', 'string', ['=', '>', '>=', '<', '<=', 'between'], true, true, 'string'),
+            'time' => $this->definition('date', 'string', 'string', ['=', '>', '>=', '<', '<=', 'between'], true, true, 'string'),
+            'time_range' => $this->definition('date', 'json', 'array', ['contains'], false, false, 'array'),
+            'date_range' => $this->definition('date', 'json', 'array', ['contains'], false, false, 'array'),
+            'datetime_range' => $this->definition('date', 'json', 'array', ['contains'], false, false, 'array'),
             'json' => $this->definition('func', 'json', 'array', ['contains'], false, false, 'array'),
             'cascader' => $this->definition('select', 'json', 'array', ['contains'], false, false, 'array'),
-            'file' => $this->definition('file', 'string', 'mixed', ['='], false, false, 'mixed'),
-            'resource' => $this->definition('file', 'string', 'mixed', ['='], false, false, 'mixed'),
-            'image' => $this->definition('file', 'string', 'mixed', ['='], false, false, 'mixed'),
+            'icon_input' => $this->definition('text', 'string', 'string', ['=', 'like', 'in'], true, true, 'string'),
+            'image' => $this->definition('file', 'json', 'array', ['contains'], false, false, 'array'),
+            'attachment' => $this->definition('file', 'json', 'array', ['contains'], false, false, 'array'),
         ];
     }
 

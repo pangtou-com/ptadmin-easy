@@ -16,6 +16,7 @@ declare(strict_types=1);
 namespace PTAdmin\Easy\Engine\Model;
 
 use Illuminate\Database\Eloquent\Model;
+use PTAdmin\Easy\Core\Runtime\ExecutionContext;
 use PTAdmin\Easy\Contracts\IResource;
 
 class EasyModel extends Model
@@ -111,6 +112,11 @@ class EasyModel extends Model
         }
 
         return $this->document->getAppendsValue($this);
+    }
+
+    public function currentContext(): ?ExecutionContext
+    {
+        return null !== $this->document ? $this->document->currentContext() : null;
     }
 
     public function getFillable(): array

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PTAdmin\Easy\Engine\Model;
 
+use PTAdmin\Easy\Core\Runtime\ExecutionContext;
+
 /**
  * 轻量资源记录对象.
  *
@@ -55,6 +57,11 @@ class ResourceRecord
     public function rawAttributes(): array
     {
         return $this->attributes;
+    }
+
+    public function currentContext(): ?ExecutionContext
+    {
+        return null !== $this->document ? $this->document->currentContext() : null;
     }
 
     /**

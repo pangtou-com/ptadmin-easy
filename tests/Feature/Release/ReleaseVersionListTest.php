@@ -21,7 +21,7 @@ it('可以按状态与关键字筛选版本列表和草稿列表', function (): 
                 'name' => 'excerpt',
                 'type' => 'text',
                 'label' => '摘要',
-                'length' => 120,
+                'maxlength' => 120,
             ],
         ]),
     ]), ['remark' => '第二版草稿']);

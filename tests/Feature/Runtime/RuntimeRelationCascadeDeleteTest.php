@@ -22,8 +22,8 @@ it('删除主记录时会级联删除 hasOne 和 hasMany 子记录', function ()
         'allow_recycle' => 0,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'article_id', 'type' => 'number', 'label' => '文章ID', 'is_required' => 1],
-            ['name' => 'summary', 'type' => 'text', 'label' => 'SEO描述', 'is_required' => 1, 'length' => 255],
+            ['name' => 'article_id', 'type' => 'number', 'label' => '文章ID', 'required' => true],
+            ['name' => 'summary', 'type' => 'text', 'label' => 'SEO描述', 'required' => true, 'maxlength' => 255],
         ],
     ]);
 
@@ -34,8 +34,8 @@ it('删除主记录时会级联删除 hasOne 和 hasMany 子记录', function ()
         'allow_recycle' => 0,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'article_id', 'type' => 'number', 'label' => '文章ID', 'is_required' => 1],
-            ['name' => 'content', 'type' => 'text', 'label' => '评论内容', 'is_required' => 1, 'length' => 100],
+            ['name' => 'article_id', 'type' => 'number', 'label' => '文章ID', 'required' => true],
+            ['name' => 'content', 'type' => 'text', 'label' => '评论内容', 'required' => true, 'maxlength' => 100],
         ],
     ]);
 
@@ -46,8 +46,8 @@ it('删除主记录时会级联删除 hasOne 和 hasMany 子记录', function ()
         'allow_recycle' => 0,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'is_required' => 1, 'length' => 100],
-            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'is_required' => 1],
+            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'required' => true, 'maxlength' => 100],
+            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'required' => true],
             [
                 'name' => 'seo',
                 'type' => 'table',
@@ -105,8 +105,8 @@ it('删除启用回收站的主记录时会级联回收子记录', function (): 
         'allow_recycle' => 1,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'article_id', 'type' => 'number', 'label' => '文章ID', 'is_required' => 1],
-            ['name' => 'content', 'type' => 'text', 'label' => '评论内容', 'is_required' => 1, 'length' => 100],
+            ['name' => 'article_id', 'type' => 'number', 'label' => '文章ID', 'required' => true],
+            ['name' => 'content', 'type' => 'text', 'label' => '评论内容', 'required' => true, 'maxlength' => 100],
         ],
     ]);
 
@@ -117,8 +117,8 @@ it('删除启用回收站的主记录时会级联回收子记录', function (): 
         'allow_recycle' => 1,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'is_required' => 1, 'length' => 100],
-            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'is_required' => 1],
+            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'required' => true, 'maxlength' => 100],
+            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'required' => true],
             [
                 'name' => 'comments',
                 'type' => 'table',
@@ -160,8 +160,8 @@ it('restrict 删除策略会阻止删除存在子记录的主记录', function (
         'allow_recycle' => 0,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'article_id', 'type' => 'number', 'label' => '文章ID', 'is_required' => 1],
-            ['name' => 'content', 'type' => 'text', 'label' => '评论内容', 'is_required' => 1, 'length' => 100],
+            ['name' => 'article_id', 'type' => 'number', 'label' => '文章ID', 'required' => true],
+            ['name' => 'content', 'type' => 'text', 'label' => '评论内容', 'required' => true, 'maxlength' => 100],
         ],
     ]);
 
@@ -172,8 +172,8 @@ it('restrict 删除策略会阻止删除存在子记录的主记录', function (
         'allow_recycle' => 0,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'is_required' => 1, 'length' => 100],
-            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'is_required' => 1],
+            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'required' => true, 'maxlength' => 100],
+            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'required' => true],
             [
                 'name' => 'comments',
                 'type' => 'table',
@@ -217,7 +217,7 @@ it('set_null 删除策略会将子记录外键置空', function (): void {
         'track_changes' => 0,
         'fields' => [
             ['name' => 'article_id', 'type' => 'number', 'label' => '文章ID'],
-            ['name' => 'content', 'type' => 'text', 'label' => '评论内容', 'is_required' => 1, 'length' => 100],
+            ['name' => 'content', 'type' => 'text', 'label' => '评论内容', 'required' => true, 'maxlength' => 100],
         ],
     ]);
 
@@ -228,8 +228,8 @@ it('set_null 删除策略会将子记录外键置空', function (): void {
         'allow_recycle' => 0,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'is_required' => 1, 'length' => 100],
-            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'is_required' => 1],
+            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'required' => true, 'maxlength' => 100],
+            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'required' => true],
             [
                 'name' => 'comments',
                 'type' => 'table',

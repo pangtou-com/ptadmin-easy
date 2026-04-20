@@ -34,7 +34,7 @@ it('publishes schema versions and supports rollback with schema sync', function 
                 'name' => 'excerpt',
                 'type' => 'text',
                 'label' => '摘要',
-                'length' => 120,
+                'maxlength' => 120,
             ],
         ]),
     ]);
@@ -222,7 +222,7 @@ it('applies scopes to reads and writes and only audits successful writes', funct
     expect($auditOperations)->toBe(['create', 'create', 'create', 'delete']);
 });
 
-it('supports list query dsl and legacy filter order format', function (): void {
+it('supports list query dsl and pagination payload', function (): void {
     $table = easyRuntimeTable('query');
     $handle = Easy::doc($table);
 
@@ -256,21 +256,23 @@ it('supports list query dsl and legacy filter order format', function (): void {
         'page' => 1,
     ]);
 
-    $legacyResult = $handle->lists([
+    $legacyAliasesIgnored = $handle->lists([
         'filter' => [
             'status' => 1,
         ],
         'order' => [
             'id' => 'asc',
         ],
+        'search' => 'alpha',
+        'search_fields' => ['title'],
     ]);
 
     $paginated = $handle->lists([
-        'filter' => [
-            'status' => 1,
+        'filters' => [
+            ['field' => 'status', 'operator' => '=', 'value' => 1],
         ],
-        'order' => [
-            'id' => 'asc',
+        'sorts' => [
+            ['field' => 'id', 'direction' => 'asc'],
         ],
         'limit' => 1,
         'page' => 2,
@@ -278,7 +280,7 @@ it('supports list query dsl and legacy filter order format', function (): void {
     ]);
 
     expect(array_column($dslResult, 'title'))->toBe(['gamma'])
-        ->and(array_column($legacyResult, 'title'))->toBe(['alpha', 'gamma'])
+        ->and($legacyAliasesIgnored)->toHaveCount(3)
         ->and($paginated['current_page'])->toBe(2)
         ->and($paginated['per_page'])->toBe(1)
         ->and($paginated['total'])->toBe(2)
@@ -384,14 +386,14 @@ it('resolves relation display text for resource-backed select and link fields', 
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '分类标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'status',
                 'type' => 'switch',
                 'label' => '状态',
-                'default' => 1,
+                'defaultValue' => 1,
             ],
         ],
         'title_field' => 'title',
@@ -409,21 +411,21 @@ it('resolves relation display text for resource-backed select and link fields', 
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '文章标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'tenant_id',
                 'type' => 'number',
                 'label' => '租户',
-                'is_required' => 1,
-                'default' => 0,
+                'required' => true,
+                'defaultValue' => 0,
             ],
             [
                 'name' => 'status',
                 'type' => 'switch',
                 'label' => '状态',
-                'default' => 1,
+                'defaultValue' => 1,
             ],
             [
                 'name' => 'category_id',
@@ -516,14 +518,14 @@ it('filters list results by relation append text fields', function (): void {
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '分类标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'status',
                 'type' => 'switch',
                 'label' => '状态',
-                'default' => 1,
+                'defaultValue' => 1,
             ],
         ],
         'title_field' => 'title',
@@ -540,21 +542,21 @@ it('filters list results by relation append text fields', function (): void {
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '文章标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'tenant_id',
                 'type' => 'number',
                 'label' => '租户',
-                'is_required' => 1,
-                'default' => 0,
+                'required' => true,
+                'defaultValue' => 0,
             ],
             [
                 'name' => 'status',
                 'type' => 'switch',
                 'label' => '状态',
-                'default' => 1,
+                'defaultValue' => 1,
             ],
             [
                 'name' => 'category_id',
@@ -624,8 +626,8 @@ it('sorts list results by relation append text fields', function (): void {
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '分类标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
         ],
         'title_field' => 'title',
@@ -642,21 +644,21 @@ it('sorts list results by relation append text fields', function (): void {
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '文章标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'tenant_id',
                 'type' => 'number',
                 'label' => '租户',
-                'is_required' => 1,
-                'default' => 0,
+                'required' => true,
+                'defaultValue' => 0,
             ],
             [
                 'name' => 'status',
                 'type' => 'switch',
                 'label' => '状态',
-                'default' => 1,
+                'defaultValue' => 1,
             ],
             [
                 'name' => 'category_id',
@@ -730,14 +732,14 @@ it('supports normalized relation protocol aliases in runtime schemas', function 
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '分类标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'status',
                 'type' => 'switch',
                 'label' => '状态',
-                'default' => 1,
+                'defaultValue' => 1,
             ],
         ],
     ];
@@ -752,15 +754,15 @@ it('supports normalized relation protocol aliases in runtime schemas', function 
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '文章标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'tenant_id',
                 'type' => 'number',
                 'label' => '租户',
-                'is_required' => 1,
-                'default' => 0,
+                'required' => true,
+                'defaultValue' => 0,
             ],
             [
                 'name' => 'category_id',
@@ -837,14 +839,14 @@ it('loads belongsTo relation objects through query parameters and chain with enh
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '分类标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'status',
                 'type' => 'switch',
                 'label' => '状态',
-                'default' => 1,
+                'defaultValue' => 1,
             ],
         ],
     ];
@@ -859,15 +861,15 @@ it('loads belongsTo relation objects through query parameters and chain with enh
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '文章标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'tenant_id',
                 'type' => 'number',
                 'label' => '租户',
-                'is_required' => 1,
-                'default' => 0,
+                'required' => true,
+                'defaultValue' => 0,
             ],
             [
                 'name' => 'category_id',
@@ -936,8 +938,8 @@ it('falls back to private relation output keys when belongsTo alias collides wit
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '分类标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
         ],
     ];
@@ -952,21 +954,21 @@ it('falls back to private relation output keys when belongsTo alias collides wit
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '文章标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'tenant_id',
                 'type' => 'number',
                 'label' => '租户',
-                'is_required' => 1,
-                'default' => 0,
+                'required' => true,
+                'defaultValue' => 0,
             ],
             [
                 'name' => 'category',
                 'type' => 'text',
                 'label' => '业务分类名',
-                'length' => 100,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'category_id',
@@ -1016,20 +1018,20 @@ it('creates loads updates and clears hasOne child records through normalized rel
                 'name' => 'article_id',
                 'type' => 'number',
                 'label' => '文章ID',
-                'is_required' => 1,
+                'required' => true,
             ],
             [
                 'name' => 'summary',
                 'type' => 'text',
                 'label' => 'SEO描述',
-                'is_required' => 1,
-                'length' => 255,
+                'required' => true,
+                'maxlength' => 255,
             ],
             [
                 'name' => 'status',
                 'type' => 'switch',
                 'label' => '状态',
-                'default' => 1,
+                'defaultValue' => 1,
             ],
         ],
     ];
@@ -1044,15 +1046,15 @@ it('creates loads updates and clears hasOne child records through normalized rel
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '文章标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'tenant_id',
                 'type' => 'number',
                 'label' => '租户',
-                'is_required' => 1,
-                'default' => 0,
+                'required' => true,
+                'defaultValue' => 0,
             ],
             [
                 'name' => 'seo',
@@ -1157,20 +1159,20 @@ it('creates and loads hasMany child records through normalized relation protocol
                 'name' => 'article_id',
                 'type' => 'number',
                 'label' => '文章ID',
-                'is_required' => 1,
+                'required' => true,
             ],
             [
                 'name' => 'content',
                 'type' => 'text',
                 'label' => '评论内容',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'status',
                 'type' => 'switch',
                 'label' => '状态',
-                'default' => 1,
+                'defaultValue' => 1,
             ],
         ],
     ];
@@ -1185,15 +1187,15 @@ it('creates and loads hasMany child records through normalized relation protocol
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '文章标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'tenant_id',
                 'type' => 'number',
                 'label' => '租户',
-                'is_required' => 1,
-                'default' => 0,
+                'required' => true,
+                'defaultValue' => 0,
             ],
             [
                 'name' => 'comments',
@@ -1254,20 +1256,20 @@ it('syncs hasMany child records on update and preserves them when relation paylo
                 'name' => 'article_id',
                 'type' => 'number',
                 'label' => '文章ID',
-                'is_required' => 1,
+                'required' => true,
             ],
             [
                 'name' => 'content',
                 'type' => 'text',
                 'label' => '评论内容',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'status',
                 'type' => 'switch',
                 'label' => '状态',
-                'default' => 1,
+                'defaultValue' => 1,
             ],
         ],
     ];
@@ -1282,15 +1284,15 @@ it('syncs hasMany child records on update and preserves them when relation paylo
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '文章标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'tenant_id',
                 'type' => 'number',
                 'label' => '租户',
-                'is_required' => 1,
-                'default' => 0,
+                'required' => true,
+                'defaultValue' => 0,
             ],
             [
                 'name' => 'comments',
@@ -1381,14 +1383,14 @@ it('keeps query relation loading parameters available alongside chain enhancemen
                 'name' => 'article_id',
                 'type' => 'number',
                 'label' => '文章ID',
-                'is_required' => 1,
+                'required' => true,
             ],
             [
                 'name' => 'content',
                 'type' => 'text',
                 'label' => '评论内容',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
         ],
     ];
@@ -1403,15 +1405,15 @@ it('keeps query relation loading parameters available alongside chain enhancemen
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '文章标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'tenant_id',
                 'type' => 'number',
                 'label' => '租户',
-                'is_required' => 1,
-                'default' => 0,
+                'required' => true,
+                'defaultValue' => 0,
             ],
             [
                 'name' => 'comments',
@@ -1471,14 +1473,14 @@ it('filters list results by belongsTo relation fields', function (): void {
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '分类标题',
-                'is_required' => 1,
-                'length' => 100,
+                'required' => true,
+                'maxlength' => 100,
             ],
             [
                 'name' => 'status',
                 'type' => 'switch',
                 'label' => '状态',
-                'default' => 1,
+                'defaultValue' => 1,
             ],
         ],
     ];
@@ -1489,8 +1491,8 @@ it('filters list results by belongsTo relation fields', function (): void {
         'allow_recycle' => 0,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'is_required' => 1, 'length' => 100],
-            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'is_required' => 1, 'default' => 0],
+            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'required' => true, 'maxlength' => 100],
+            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'required' => true, 'defaultValue' => 0],
             [
                 'name' => 'category_id',
                 'type' => 'select',
@@ -1537,8 +1539,8 @@ it('filters list results by hasOne relation fields', function (): void {
         'allow_recycle' => 0,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'article_id', 'type' => 'number', 'label' => '文章ID', 'is_required' => 1],
-            ['name' => 'summary', 'type' => 'text', 'label' => 'SEO描述', 'is_required' => 1, 'length' => 255],
+            ['name' => 'article_id', 'type' => 'number', 'label' => '文章ID', 'required' => true],
+            ['name' => 'summary', 'type' => 'text', 'label' => 'SEO描述', 'required' => true, 'maxlength' => 255],
         ],
     ];
     $articleSchema = [
@@ -1548,8 +1550,8 @@ it('filters list results by hasOne relation fields', function (): void {
         'allow_recycle' => 0,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'is_required' => 1, 'length' => 100],
-            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'is_required' => 1, 'default' => 0],
+            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'required' => true, 'maxlength' => 100],
+            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'required' => true, 'defaultValue' => 0],
             [
                 'name' => 'seo',
                 'type' => 'table',
@@ -1601,8 +1603,8 @@ it('filters list results by hasMany relation fields', function (): void {
         'allow_recycle' => 0,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'article_id', 'type' => 'number', 'label' => '文章ID', 'is_required' => 1],
-            ['name' => 'content', 'type' => 'text', 'label' => '评论内容', 'is_required' => 1, 'length' => 100],
+            ['name' => 'article_id', 'type' => 'number', 'label' => '文章ID', 'required' => true],
+            ['name' => 'content', 'type' => 'text', 'label' => '评论内容', 'required' => true, 'maxlength' => 100],
         ],
     ];
     $articleSchema = [
@@ -1612,8 +1614,8 @@ it('filters list results by hasMany relation fields', function (): void {
         'allow_recycle' => 0,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'is_required' => 1, 'length' => 100],
-            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'is_required' => 1, 'default' => 0],
+            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'required' => true, 'maxlength' => 100],
+            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'required' => true, 'defaultValue' => 0],
             [
                 'name' => 'comments',
                 'type' => 'table',
@@ -1670,7 +1672,7 @@ it('sorts list results by belongsTo relation fields', function (): void {
         'allow_recycle' => 0,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'title', 'type' => 'text', 'label' => '分类标题', 'is_required' => 1, 'length' => 100],
+            ['name' => 'title', 'type' => 'text', 'label' => '分类标题', 'required' => true, 'maxlength' => 100],
         ],
     ];
     $articleSchema = [
@@ -1680,8 +1682,8 @@ it('sorts list results by belongsTo relation fields', function (): void {
         'allow_recycle' => 0,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'is_required' => 1, 'length' => 100],
-            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'is_required' => 1, 'default' => 0],
+            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'required' => true, 'maxlength' => 100],
+            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'required' => true, 'defaultValue' => 0],
             [
                 'name' => 'category_id',
                 'type' => 'select',
@@ -1735,8 +1737,8 @@ it('sorts list results by hasOne relation fields', function (): void {
         'allow_recycle' => 0,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'article_id', 'type' => 'number', 'label' => '文章ID', 'is_required' => 1],
-            ['name' => 'summary', 'type' => 'text', 'label' => 'SEO描述', 'is_required' => 1, 'length' => 255],
+            ['name' => 'article_id', 'type' => 'number', 'label' => '文章ID', 'required' => true],
+            ['name' => 'summary', 'type' => 'text', 'label' => 'SEO描述', 'required' => true, 'maxlength' => 255],
         ],
     ];
     $articleSchema = [
@@ -1746,8 +1748,8 @@ it('sorts list results by hasOne relation fields', function (): void {
         'allow_recycle' => 0,
         'track_changes' => 0,
         'fields' => [
-            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'is_required' => 1, 'length' => 100],
-            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'is_required' => 1, 'default' => 0],
+            ['name' => 'title', 'type' => 'text', 'label' => '文章标题', 'required' => true, 'maxlength' => 100],
+            ['name' => 'tenant_id', 'type' => 'number', 'label' => '租户', 'required' => true, 'defaultValue' => 0],
             [
                 'name' => 'seo',
                 'type' => 'table',
@@ -2030,7 +2032,7 @@ it('explains publish plan changes for add rename change and drop operations', fu
                 'name' => 'legacy_code',
                 'type' => 'text',
                 'label' => '旧编码',
-                'length' => 30,
+                'maxlength' => 30,
             ],
         ]),
     ]);
@@ -2040,16 +2042,16 @@ it('explains publish plan changes for add rename change and drop operations', fu
                 'name' => 'headline',
                 'type' => 'text',
                 'label' => '标题',
-                'is_required' => 1,
+                'required' => true,
                 'is_unique' => 1,
-                'length' => 150,
+                'maxlength' => 150,
                 'rename_from' => 'title',
             ],
             [
                 'name' => 'tenant_id',
                 'type' => 'number',
                 'label' => '租户',
-                'is_required' => 1,
+                'required' => true,
                 'extends' => [
                     'max' => 999999,
                 ],
@@ -2058,13 +2060,13 @@ it('explains publish plan changes for add rename change and drop operations', fu
                 'name' => 'status',
                 'type' => 'text',
                 'label' => '状态文本',
-                'length' => 20,
+                'maxlength' => 20,
             ],
             [
                 'name' => 'excerpt',
                 'type' => 'text',
                 'label' => '摘要',
-                'length' => 120,
+                'maxlength' => 120,
             ],
         ],
     ]);
@@ -2151,8 +2153,8 @@ it('distinguishes layout nodes from real fields in frontend schema payload', fun
                     'name' => 'title',
                     'type' => 'text',
                     'label' => '标题',
-                    'is_required' => 1,
-                    'length' => 100,
+                    'required' => true,
+                    'maxlength' => 100,
                 ],
                 [
                     'type' => 'grid',
@@ -2163,7 +2165,7 @@ it('distinguishes layout nodes from real fields in frontend schema payload', fun
                                     'name' => 'tenant_id',
                                     'type' => 'number',
                                     'label' => '租户',
-                                    'default' => 0,
+                                    'defaultValue' => 0,
                                 ],
                             ],
                         ],
@@ -2177,7 +2179,7 @@ it('distinguishes layout nodes from real fields in frontend schema payload', fun
                                         ['label' => '启用', 'value' => 1],
                                         ['label' => '禁用', 'value' => 0],
                                     ],
-                                    'default' => 1,
+                                    'defaultValue' => 1,
                                 ],
                             ],
                         ],
@@ -2248,13 +2250,13 @@ it('supports frontend builder schema aliases and mixed layout payloads', functio
                                     ['label' => '列表栏目', 'value' => 'list'],
                                     ['label' => '单页栏目', 'value' => 'page'],
                                 ],
-                                'def' => 'list',
+                                'defaultValue' => 'list',
                             ],
                             [
                                 'name' => 'parent_ids',
                                 'type' => 'cascader',
                                 'label' => '父级栏目',
-                                'pl' => '不选择则为顶级栏目',
+                                'placeholder' => '不选择则为顶级栏目',
                             ],
                             [
                                 'name' => 'title',
@@ -2286,9 +2288,11 @@ it('supports frontend builder schema aliases and mixed layout payloads', functio
                         'children' => [
                             [
                                 'name' => 'cover',
-                                'type' => 'resource',
+                                'type' => 'image',
                                 'label' => '栏目图片',
                                 'help' => '建议尺寸：300x200',
+                                'limit' => 1,
+                                'enableAlt' => true,
                             ],
                         ],
                     ],
@@ -2305,7 +2309,7 @@ it('supports frontend builder schema aliases and mixed layout payloads', functio
                         'type' => 'switch',
                         'name' => 'status',
                         'label' => '栏目状态',
-                        'def' => 1,
+                        'defaultValue' => 1,
                     ],
                 ],
             ],
@@ -2323,7 +2327,16 @@ it('supports frontend builder schema aliases and mixed layout payloads', functio
         'parent_ids' => [1, 2],
         'title' => '新闻栏目',
         'alias' => 'news',
-        'cover' => '/uploads/category.png',
+        'cover' => [
+            [
+                'id' => 101,
+                'url' => '/uploads/category.png',
+                'title' => 'category.png',
+                'type' => 'image',
+                'mime' => 'image/png',
+                'size' => 1024,
+            ],
+        ],
         'status' => 1,
     ]);
     $raw = $schemaHandle->raw()->toArray();
@@ -2342,7 +2355,7 @@ it('supports frontend builder schema aliases and mixed layout payloads', functio
         ->and(array_column($raw['fields'], 'name'))->toBe(['type', 'parent_ids', 'title', 'alias', 'cover', 'status'])
         ->and(data_get($raw, 'fields.0.is_required'))->toBe(1)
         ->and(data_get($raw, 'fields.1.type'))->toBe('cascader')
-        ->and(data_get($raw, 'fields.4.type'))->toBe('resource')
+        ->and(data_get($raw, 'fields.4.type'))->toBe('image')
         ->and(data_get($raw, 'fields.5.type'))->toBe('switch')
         ->and(data_get($raw, 'layout.nodes.0.type'))->toBe('row')
         ->and(data_get($raw, 'table.tree'))->toBeTrue()
@@ -2354,29 +2367,178 @@ it('supports frontend builder schema aliases and mixed layout payloads', functio
         ->and(data_get($blueprint, 'views.form.footer'))->toBeFalse()
         ->and(data_get($blueprint, 'layout.nodes.0.type'))->toBe('row')
         ->and(array_column($blueprint['fields'], 'name'))->toBe(['type', 'parent_ids', 'title', 'alias', 'cover', 'status'])
-        ->and(data_get($blueprint, 'fields.0.default'))->toBe('list')
+        ->and(data_get($blueprint, 'fields.0.defaultValue'))->toBe('list')
         ->and(data_get($blueprint, 'fields.0.required'))->toBeTrue()
         ->and(data_get($blueprint, 'fields.1.type'))->toBe('cascader')
         ->and(data_get($blueprint, 'fields.1.placeholder'))->toBe('不选择则为顶级栏目')
         ->and(data_get($blueprint, 'fields.2.rules'))->toContain('required', 'max:100')
         ->and(data_get($blueprint, 'fields.3.rules'))->toContain('min:2', 'max:100', 'regex:/^[a-zA-Z0-9_-]+$/')
-        ->and(data_get($blueprint, 'fields.4.comment'))->toBe('建议尺寸：300x200')
-        ->and(data_get($blueprint, 'fields.5.display.form.visible'))->toBeTrue()
-        ->and(data_get($blueprint, 'fields.5.editable'))->toBeTrue()
-        ->and(data_get($blueprint, 'fields.2.mapping.component.group'))->toBe('text')
-        ->and(data_get($blueprint, 'fields.2.mapping.storage.column_definition'))->toBe('varchar(100)')
-        ->and(data_get($blueprint, 'fields.2.mapping.storage.runtime_cast'))->toBe('string')
-        ->and(data_get($blueprint, 'fields.2.mapping.validation.rules'))->toContain('required', 'max:100')
-        ->and(data_get($blueprint, 'fields.2.mapping.query.filterable'))->toBeTrue()
-        ->and(data_get($blueprint, 'fields.2.mapping.query.sortable'))->toBeTrue()
-        ->and(data_get($blueprint, 'fields.1.mapping.storage.column_definition'))->toBe('json')
-        ->and(data_get($blueprint, 'fields.1.mapping.storage.runtime_cast'))->toBe('array')
-        ->and(data_get($blueprint, 'fields.5.mapping.storage.column_definition'))->toBe('tinyint unsigned')
+        ->and(data_get($blueprint, 'fields.4.help'))->toBe('建议尺寸：300x200')
+        ->and(data_get($blueprint, 'fields.4.limit'))->toBe(1)
+        ->and(data_get($blueprint, 'fields.4.enableAlt'))->toBeTrue()
         ->and(data_get($blueprint, 'fields.5.type'))->toBe('switch')
         ->and(data_get($blueprint, 'fields.5.options.0.value'))->toBe(1)
+        ->and($created->cover)->toBe([
+            [
+                'id' => 101,
+                'url' => '/uploads/category.png',
+                'title' => 'category.png',
+                'type' => 'image',
+            ],
+        ])
+        ->and(data_get($fieldMappings, 'title.component.group'))->toBe('text')
         ->and(data_get($fieldMappings, 'title.storage.column_definition'))->toBe('varchar(100)')
+        ->and(data_get($fieldMappings, 'title.storage.runtime_cast'))->toBe('string')
+        ->and(data_get($fieldMappings, 'title.validation.rules'))->toContain('required', 'max:100')
+        ->and(data_get($fieldMappings, 'title.query.filterable'))->toBeTrue()
+        ->and(data_get($fieldMappings, 'title.query.sortable'))->toBeTrue()
+        ->and(data_get($fieldMappings, 'parent_ids.storage.column_definition'))->toBe('json')
         ->and(data_get($fieldMappings, 'parent_ids.storage.runtime_cast'))->toBe('array')
+        ->and(data_get($fieldMappings, 'cover.storage.column_definition'))->toBe('json')
+        ->and(data_get($fieldMappings, 'cover.storage.runtime_cast'))->toBe('array')
+        ->and(data_get($fieldMappings, 'status.display.form.visible'))->toBeTrue()
+        ->and(data_get($fieldMappings, 'status.display.editable'))->toBeTrue()
+        ->and(data_get($fieldMappings, 'status.storage.column_definition'))->toBe('tinyint unsigned')
         ->and(data_get($fieldMappings, 'status.component.type'))->toBe('switch');
+});
+
+it('enforces strict asset array protocol and stores light asset snapshots', function (): void {
+    $table = easyRuntimeTable('asset_protocol');
+    $schema = [
+        'title' => '资源字段',
+        'name' => $table,
+        'module' => 'cms',
+        'fields' => [
+            [
+                'name' => 'title',
+                'type' => 'text',
+                'label' => '标题',
+                'required' => true,
+                'maxlength' => 100,
+            ],
+            [
+                'name' => 'cover',
+                'type' => 'image',
+                'label' => '封面',
+                'limit' => 1,
+            ],
+            [
+                'name' => 'attachments',
+                'type' => 'attachment',
+                'label' => '附件',
+                'limit' => 3,
+            ],
+        ],
+    ];
+
+    $docHandle = Easy::doc($schema);
+    $schemaHandle = Easy::schema($schema);
+
+    Easy::release($schema)->publish($schema);
+
+    expect(function () use ($docHandle): void {
+        $docHandle->create([
+            'title' => '无效资源',
+            'cover' => '/uploads/cover.png',
+        ]);
+    })->toThrow(EasyValidateException::class, 'The 封面 must be an array.')
+        ->and(function () use ($docHandle): void {
+            $docHandle->create([
+                'title' => '无效资源',
+                'cover' => [
+                    'id' => 1,
+                    'url' => '/uploads/cover.png',
+                    'title' => 'cover.png',
+                    'type' => 'image',
+                ],
+            ]);
+        })->toThrow(EasyValidateException::class)
+        ->and(function () use ($docHandle): void {
+            $docHandle->create([
+                'title' => '无效资源',
+                'attachments' => [
+                    [
+                        'id' => 2,
+                        'url' => '/uploads/manual.pdf',
+                        'type' => 'file',
+                    ],
+                ],
+            ]);
+        })->toThrow(EasyValidateException::class, '字段[attachments]第1项缺少有效的[title]。');
+
+    $created = $docHandle->create([
+        'title' => '有效资源',
+        'cover' => [
+            [
+                'id' => 11,
+                'url' => '/uploads/cover.png',
+                'title' => '封面图',
+                'type' => 'image',
+                'mime' => 'image/png',
+                'size' => 1024,
+            ],
+        ],
+        'attachments' => [
+            [
+                'id' => 22,
+                'url' => '/uploads/manual.pdf',
+                'title' => '用户手册',
+                'type' => 'file',
+                'mime' => 'application/pdf',
+            ],
+            [
+                'id' => 22,
+                'url' => '/uploads/manual.pdf',
+                'title' => '用户手册',
+                'type' => 'file',
+            ],
+        ],
+    ]);
+
+    $stored = DB::table($table)->where('id', $created->id)->first();
+    $mapping = $schemaHandle->fieldMappings();
+    $normalizeAssets = static function (array $items): array {
+        return array_map(static function (array $item): array {
+            ksort($item);
+
+            return $item;
+        }, $items);
+    };
+
+    expect($normalizeAssets($created->cover))->toBe($normalizeAssets([
+        [
+            'id' => 11,
+            'url' => '/uploads/cover.png',
+            'title' => '封面图',
+            'type' => 'image',
+        ],
+    ]))
+        ->and($normalizeAssets($created->attachments))->toBe($normalizeAssets([
+            [
+                'id' => 22,
+                'url' => '/uploads/manual.pdf',
+                'title' => '用户手册',
+                'type' => 'file',
+            ],
+        ]))
+        ->and($normalizeAssets(json_decode((string) ($stored->cover ?? 'null'), true)))->toBe($normalizeAssets([
+            [
+                'id' => 11,
+                'url' => '/uploads/cover.png',
+                'title' => '封面图',
+                'type' => 'image',
+            ],
+        ]))
+        ->and($normalizeAssets(json_decode((string) ($stored->attachments ?? 'null'), true)))->toBe($normalizeAssets([
+            [
+                'id' => 22,
+                'url' => '/uploads/manual.pdf',
+                'title' => '用户手册',
+                'type' => 'file',
+            ],
+        ]))
+        ->and(data_get($mapping, 'cover.validation.rules'))->toContain('array', 'max:1')
+        ->and(data_get($mapping, 'attachments.validation.rules'))->toContain('array', 'max:3');
 });
 
 it('maps frontend builder rules to runtime validation constraints', function (): void {
@@ -2419,7 +2581,7 @@ it('maps frontend builder rules to runtime validation constraints', function ():
                                 'label' => '排序',
                                 'min' => 0,
                                 'max' => 5,
-                                'def' => 0,
+                                'defaultValue' => 0,
                             ],
                         ],
                     ],
@@ -2534,14 +2696,116 @@ it('maps builder display states and custom validation messages into blueprint an
         })->toThrow(EasyValidateException::class, '栏目别名不能为空');
 
     $blueprint = $schemaHandle->blueprint();
+    $mapping = $schemaHandle->fieldMappings();
 
-    expect(data_get($blueprint, 'fields.0.rule_messages.required'))->toBe('栏目别名不能为空')
-        ->and(data_get($blueprint, 'fields.0.rule_messages.regex'))->toBe('栏目别名格式错误')
-        ->and(data_get($blueprint, 'fields.0.display.form.visible'))->toBeTrue()
-        ->and(data_get($blueprint, 'fields.0.display.table.visible'))->toBeFalse()
-        ->and(data_get($blueprint, 'fields.0.readonly'))->toBeTrue()
-        ->and(data_get($blueprint, 'fields.0.editable'))->toBeFalse()
-        ->and(data_get($blueprint, 'fields.1.hidden'))->toBeTrue()
-        ->and(data_get($blueprint, 'fields.1.display.form.visible'))->toBeFalse()
-        ->and(data_get($blueprint, 'fields.1.display.table.visible'))->toBeFalse();
+    expect(data_get($mapping, 'alias.validation.messages.required'))->toBe('栏目别名不能为空')
+        ->and(data_get($mapping, 'alias.validation.messages.regex'))->toBe('栏目别名格式错误')
+        ->and(data_get($mapping, 'alias.display.form.visible'))->toBeTrue()
+        ->and(data_get($mapping, 'alias.display.table.visible'))->toBeFalse()
+        ->and(data_get($mapping, 'alias.display.readonly'))->toBeTrue()
+        ->and(data_get($mapping, 'alias.display.editable'))->toBeFalse()
+        ->and(data_get($mapping, 'secret_note.display.hidden'))->toBeTrue()
+        ->and(data_get($mapping, 'secret_note.display.form.visible'))->toBeFalse()
+        ->and(data_get($mapping, 'secret_note.display.table.visible'))->toBeFalse()
+        ->and(data_get($blueprint, 'fields.0.rule_messages'))->toBeNull()
+        ->and(data_get($blueprint, 'fields.0.display'))->toBeNull()
+        ->and(data_get($blueprint, 'fields.0.readonly'))->toBeNull()
+        ->and(data_get($blueprint, 'fields.1.hidden'))->toBeNull();
+});
+
+it('supports secret encryption and masked output with explicit sensitive access context', function (): void {
+    $table = easyRuntimeTable('sensitive');
+    $schema = easyRuntimeSchema($table, [
+        'fields' => array_merge(easyRuntimeSchema($table)['fields'], [
+            [
+                'name' => 'api_secret',
+                'type' => 'text',
+                'label' => '密钥',
+                'secret' => true,
+                'maxlength' => 100,
+            ],
+            [
+                'name' => 'secret_note',
+                'type' => 'textarea',
+                'label' => '密钥备注',
+                'secret' => true,
+                'maxlength' => 1000,
+            ],
+            [
+                'name' => 'phone',
+                'type' => 'text',
+                'label' => '联系方式',
+                'mask' => [
+                    'strategy' => 'phone',
+                ],
+                'maxlength' => 20,
+            ],
+            [
+                'name' => 'memo',
+                'type' => 'textarea',
+                'label' => '补充说明',
+                'maxlength' => 500,
+                'mask' => [
+                    'keepStart' => 2,
+                    'keepEnd' => 2,
+                    'maskChar' => '#',
+                ],
+            ],
+        ]),
+    ]);
+
+    Easy::release($table)->publish($schema);
+    $handle = Easy::doc($table);
+    $schemaHandle = Easy::schema($schema);
+
+    $created = $handle->create([
+        'title' => 'sensitive row',
+        'tenant_id' => 1,
+        'status' => 1,
+        'api_secret' => 'sk-live-123',
+        'secret_note' => 'private note',
+        'phone' => '13812344321',
+        'memo' => 'abcdefg',
+    ]);
+
+    $stored = (array) DB::table($table)->where('id', $created->id)->first();
+    $defaultDetail = $handle->detail($created->id);
+    $partialContext = (new ExecutionContext())->allowSensitive(['api_secret', 'secret_note']);
+    $partialDetail = $handle->detail($created->id, $partialContext);
+    $fullDetail = $handle->detail($created->id, (new ExecutionContext())->allowAllSensitive());
+    $defaultList = $handle->lists();
+    $fullList = $handle->lists([], (new ExecutionContext())->allowAllSensitive());
+    $mapping = $schemaHandle->fieldMappings();
+    $blueprint = $schemaHandle->blueprint();
+
+    expect($created->api_secret)->toBeNull()
+        ->and($created->secret_note)->toBeNull()
+        ->and($created->phone)->toBe('138****4321')
+        ->and($created->memo)->toBe('ab###fg')
+        ->and($stored['api_secret'])->not->toBe('sk-live-123')
+        ->and($stored['secret_note'])->not->toBe('private note')
+        ->and($stored['phone'])->toBe('13812344321')
+        ->and($defaultDetail->api_secret)->toBeNull()
+        ->and($defaultDetail->secret_note)->toBeNull()
+        ->and($defaultDetail->phone)->toBe('138****4321')
+        ->and($defaultDetail->memo)->toBe('ab###fg')
+        ->and($partialDetail->api_secret)->toBe('sk-live-123')
+        ->and($partialDetail->secret_note)->toBe('private note')
+        ->and($partialDetail->phone)->toBe('138****4321')
+        ->and($fullDetail->api_secret)->toBe('sk-live-123')
+        ->and($fullDetail->secret_note)->toBe('private note')
+        ->and($fullDetail->phone)->toBe('13812344321')
+        ->and($fullDetail->memo)->toBe('abcdefg')
+        ->and($defaultList[0]->api_secret)->toBeNull()
+        ->and($defaultList[0]->phone)->toBe('138****4321')
+        ->and($fullList[0]->api_secret)->toBe('sk-live-123')
+        ->and($fullList[0]->phone)->toBe('13812344321')
+        ->and(data_get($mapping, 'api_secret.storage.column_definition'))->toBe('text')
+        ->and(data_get($mapping, 'api_secret.query.filterable'))->toBeFalse()
+        ->and(data_get($mapping, 'api_secret.query.sortable'))->toBeFalse()
+        ->and(data_get($mapping, 'api_secret.query.searchable'))->toBeFalse()
+        ->and(data_get($mapping, 'api_secret.security.secret'))->toBeTrue()
+        ->and(data_get($mapping, 'phone.security.mask.strategy'))->toBe('phone')
+        ->and(data_get($blueprint, 'fields.3.secret'))->toBeTrue()
+        ->and(data_get($blueprint, 'fields.6.mask.maskChar'))->toBe('#');
 });

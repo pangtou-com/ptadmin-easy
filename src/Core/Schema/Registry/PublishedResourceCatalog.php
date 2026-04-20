@@ -207,19 +207,16 @@ final class PublishedResourceCatalog
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
-            ->map(static function ($row): ?array {
+            ->map(function ($row): ?array {
                 $record = (array) $row;
-                $field = self::decodeJsonColumn($record['field_json'] ?? null);
-                if (\is_array($field) && 0 !== \count($field)) {
-                    return $field;
+                $compiled = self::decodeJsonColumn($record['compiled_json'] ?? null);
+                if (\is_array($compiled) && 0 !== \count($compiled)) {
+                    return $this->normalizeFieldCacheRecord($compiled, $record);
                 }
 
-                $compiled = self::decodeJsonColumn($record['compiled_json'] ?? null);
-                if (\is_array($compiled)) {
-                    $metadata = $compiled['metadata'] ?? null;
-                    if (\is_array($metadata) && 0 !== \count($metadata)) {
-                        return $metadata;
-                    }
+                $field = self::decodeJsonColumn($record['field_json'] ?? null);
+                if (\is_array($field) && 0 !== \count($field)) {
+                    return $this->normalizeFieldCacheRecord($field, $record);
                 }
 
                 return null;
@@ -229,6 +226,41 @@ final class PublishedResourceCatalog
             })
             ->values()
             ->all();
+    }
+
+    /**
+     * @param array<string, mixed> $field
+     * @param array<string, mixed> $record
+     *
+     * @return array<string, mixed>
+     */
+    private function normalizeFieldCacheRecord(array $field, array $record): array
+    {
+        if (!array_key_exists('defaultValue', $field)) {
+            if (array_key_exists('default', $field)) {
+                $field['defaultValue'] = $field['default'];
+            } elseif (isset($record['default_val'])) {
+                $field['defaultValue'] = $record['default_val'];
+            }
+        }
+
+        if (!array_key_exists('help', $field)) {
+            if (isset($field['comment'])) {
+                $field['help'] = $field['comment'];
+            } elseif (isset($record['comment'])) {
+                $field['help'] = (string) $record['comment'];
+            }
+        }
+
+        if (!isset($field['maxlength']) && isset($record['length']) && is_numeric($record['length'])) {
+            $field['maxlength'] = (int) $record['length'];
+        }
+
+        if (!isset($field['required']) && isset($record['is_required'])) {
+            $field['required'] = 1 === (int) $record['is_required'];
+        }
+
+        return $field;
     }
 
     /**

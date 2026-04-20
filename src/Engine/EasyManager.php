@@ -23,6 +23,7 @@ use PTAdmin\Easy\Core\Action\ActionRegistry;
 use PTAdmin\Easy\Core\Hook\HookManager;
 use PTAdmin\Easy\Core\Permission\Contracts\PermissionCheckerInterface;
 use PTAdmin\Easy\Core\Permission\DefaultPermissionChecker;
+use PTAdmin\Easy\Core\Query\BuilderQueryApplier;
 use PTAdmin\Easy\Core\Query\QueryEngine;
 use PTAdmin\Easy\Core\Runtime\Runtime;
 use PTAdmin\Easy\Core\Schema\Compiler\SchemaCompiler;
@@ -54,6 +55,9 @@ final class EasyManager implements IEasyManager
 
     /** @var null|QueryEngine */
     private $queryEngine;
+
+    /** @var null|BuilderQueryApplier */
+    private $builderQueryApplier;
 
     /** @var null|ActionRegistry */
     private $actionRegistry;
@@ -190,6 +194,15 @@ final class EasyManager implements IEasyManager
     public function charts($resource, string $module = ''): ChartHandle
     {
         return $this->resourceHandle($resource, $module)->charts();
+    }
+
+    public function builderQuery(): BuilderQueryApplier
+    {
+        if (null === $this->builderQueryApplier) {
+            $this->builderQueryApplier = new BuilderQueryApplier();
+        }
+
+        return $this->builderQueryApplier;
     }
 
     /**

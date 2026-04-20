@@ -22,7 +22,7 @@ it('允许删除 archived 和 superseded 历史版本', function (): void {
                 'name' => 'excerpt',
                 'type' => 'text',
                 'label' => '摘要',
-                'length' => 100,
+                'maxlength' => 100,
             ],
         ]),
     ]), ['remark' => 'v2 草稿']);
@@ -34,7 +34,7 @@ it('允许删除 archived 和 superseded 历史版本', function (): void {
                 'name' => 'seo_title',
                 'type' => 'text',
                 'label' => 'SEO 标题',
-                'length' => 100,
+                'maxlength' => 100,
             ],
         ]),
     ]), ['remark' => 'v3 草稿']);
@@ -44,7 +44,7 @@ it('允许删除 archived 和 superseded 历史版本', function (): void {
                 'name' => 'seo_keyword',
                 'type' => 'text',
                 'label' => 'SEO 关键词',
-                'length' => 100,
+                'maxlength' => 100,
             ],
         ]),
     ]), ['remark' => 'v4 草稿']);

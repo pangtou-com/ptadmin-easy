@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PTAdmin\Easy\Core\Schema\Definition;
 
 use PTAdmin\Easy\Contracts\IResourceField;
+use PTAdmin\Easy\Core\Support\SensitiveFieldHelper;
 
 /**
  * 字段定义对象.
@@ -216,6 +217,183 @@ final class FieldDefinition
     }
 
     /**
+     * 返回字段帮助说明.
+     *
+     * @return mixed
+     */
+    public function help()
+    {
+        $help = $this->field->getMetadata('help');
+        if (null !== $help) {
+            return $help;
+        }
+
+        $comment = trim($this->comment());
+
+        return '' === $comment ? null : $comment;
+    }
+
+    public function col()
+    {
+        return $this->field->getMetadata('col');
+    }
+
+    public function control()
+    {
+        $control = $this->field->getMetadata('control');
+
+        return \is_array($control) ? $control : null;
+    }
+
+    public function formItem()
+    {
+        $formItem = $this->field->getMetadata('formItem');
+
+        return \is_array($formItem) ? $formItem : null;
+    }
+
+    public function layoutConfig()
+    {
+        $layout = $this->field->getMetadata('layout');
+
+        return \is_array($layout) ? $layout : null;
+    }
+
+    public function maxLength(): ?int
+    {
+        $value = $this->field->getMetadata('maxlength', $this->field->getMetadata('length'));
+
+        return \is_numeric($value) ? (int) $value : null;
+    }
+
+    public function minValue()
+    {
+        $value = $this->field->getMetadata('min', $this->field->getMetadata('extends.min'));
+
+        return \is_numeric($value) ? 0 + $value : $value;
+    }
+
+    public function maxValue()
+    {
+        $value = $this->field->getMetadata('max', $this->field->getMetadata('extends.max'));
+
+        return \is_numeric($value) ? 0 + $value : $value;
+    }
+
+    public function namespace(): ?string
+    {
+        $value = $this->field->getMetadata('namespace');
+
+        return \is_string($value) && '' !== trim($value) ? trim($value) : null;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function slots(): ?array
+    {
+        $slots = $this->field->getMetadata('slots');
+
+        return \is_array($slots) ? $slots : null;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function generator()
+    {
+        return $this->field->getMetadata('generator');
+    }
+
+    public function secret(): bool
+    {
+        return SensitiveFieldHelper::isSecret($this->metadata());
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function maskConfig(): ?array
+    {
+        return SensitiveFieldHelper::maskConfigFromMetadata($this->metadata());
+    }
+
+    public function show(): ?bool
+    {
+        $value = $this->field->getMetadata('show');
+        if (null === $value) {
+            return null;
+        }
+
+        return true === (bool) $value;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function operator()
+    {
+        $operator = $this->field->getMetadata('operator');
+        if (\is_array($operator)) {
+            return $operator;
+        }
+
+        if (\is_bool($operator) || null === $operator) {
+            return $operator;
+        }
+
+        return null;
+    }
+
+    public function switchProps(): array
+    {
+        $props = [];
+        foreach (['active-text', 'inactive-text', 'active-value', 'inactive-value'] as $key) {
+            if ($this->field->getMetadata($key) !== null) {
+                $props[$key] = $this->field->getMetadata($key);
+            }
+        }
+
+        return $props;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function uploadProps(): array
+    {
+        if (!\in_array($this->type(), ['image', 'attachment'], true)) {
+            return [];
+        }
+
+        $props = [];
+        foreach ([
+            'accept',
+            'ext',
+            'mime',
+            'limit',
+            'action',
+            'headers',
+            'data',
+            'method',
+            'withCredentials',
+            'enableAlt',
+            'maxSize',
+            'minSize',
+            'maxHeight',
+            'maxWidth',
+            'minHeight',
+            'minWidth',
+        ] as $key) {
+            if ($this->field->getMetadata($key) !== null) {
+                $props[$key] = $this->field->getMetadata($key);
+            }
+        }
+
+        return $props;
+    }
+
+    /**
      * 当前字段是否为虚拟字段.
      */
     public function isVirtual(): bool
@@ -278,32 +456,33 @@ final class FieldDefinition
      */
     public function toArray(): array
     {
-        return [
+        return array_filter([
             'name' => $this->name(),
             'type' => $this->type(),
-            'origin_type' => $this->originType(),
             'label' => $this->label(),
-            'comment' => $this->comment(),
             'placeholder' => $this->placeholder(),
-            'default' => $this->defaultValue(),
+            'defaultValue' => $this->defaultValue(),
+            'help' => $this->help(),
+            'col' => $this->col(),
+            'control' => $this->control(),
+            'formItem' => $this->formItem(),
+            'layout' => $this->layoutConfig(),
+            'maxlength' => $this->maxLength(),
+            'min' => $this->minValue(),
+            'max' => $this->maxValue(),
+            'namespace' => $this->namespace(),
+            'slots' => $this->slots(),
+            'generator' => $this->generator(),
+            'show' => $this->show(),
+            'operator' => $this->operator(),
             'required' => $this->isRequired(),
-            'unique' => $this->isUnique(),
-            'virtual' => $this->isVirtual(),
-            'append' => $this->isAppend(),
-            'rename_from' => $this->renameFrom(),
+            'secret' => $this->secret() ? true : null,
+            'mask' => $this->maskConfig(),
             'options' => $this->options(),
             'rules' => $this->rules(),
             'relation' => $this->relation(),
-            'scenes' => $this->scenes(),
-            'display' => $this->display(),
-            'hidden' => $this->isHidden(),
-            'readonly' => $this->isReadonly(),
-            'disabled' => $this->isDisabled(),
-            'editable' => $this->isEditable(),
-            'rule_messages' => $this->ruleMessages(),
-            'capabilities' => $this->capabilities(),
-            'mapping' => $this->mapping(),
-            'metadata' => $this->metadata(),
-        ];
+        ] + $this->switchProps() + $this->uploadProps(), static function ($value): bool {
+            return null !== $value;
+        });
     }
 }

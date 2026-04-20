@@ -21,7 +21,7 @@ it('可以对比两个版本之间的结构差异', function (): void {
                 'name' => 'excerpt',
                 'type' => 'text',
                 'label' => '摘要',
-                'length' => 120,
+                'maxlength' => 120,
             ],
         ]),
     ]), ['remark' => 'v2 草稿']);
@@ -47,7 +47,7 @@ it('可以默认与当前发布版本对比', function (): void {
                 'name' => 'excerpt',
                 'type' => 'text',
                 'label' => '摘要',
-                'length' => 120,
+                'maxlength' => 120,
             ],
         ]),
     ]), ['remark' => 'v2 草稿']);

@@ -36,11 +36,11 @@ final class ChartCompilerTest extends TestCase
                         'label' => '租户和值',
                     ],
                 ],
-                'filter' => [
-                    'status' => 1,
+                'filters' => [
+                    ['field' => 'status', 'operator' => '=', 'value' => 1],
                 ],
-                'order' => [
-                    'status' => 'desc',
+                'sorts' => [
+                    ['field' => 'status', 'direction' => 'desc'],
                 ],
             ],
             [

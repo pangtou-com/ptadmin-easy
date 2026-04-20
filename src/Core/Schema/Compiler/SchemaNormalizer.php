@@ -60,6 +60,19 @@ final class SchemaNormalizer
         'flex',
         'divider',
         'space',
+        'icon',
+        'footer',
+        'dialog',
+        'drawer',
+        'default',
+        'button',
+        'button-group',
+        'confirm',
+        'control',
+        'form',
+        'search',
+        'form-item',
+        'help',
     ];
 
     /**
@@ -295,20 +308,23 @@ final class SchemaNormalizer
             $node['type'] = self::FIELD_TYPE_ALIASES[strtolower($type)];
         }
 
-        if (!isset($node['default']) && array_key_exists('def', $node)) {
-            $node['default'] = $node['def'];
+        if (!isset($node['default']) && array_key_exists('defaultValue', $node)) {
+            $node['default'] = $node['defaultValue'];
         }
 
         if (!isset($node['is_required']) && array_key_exists('required', $node)) {
             $node['is_required'] = true === (bool) $node['required'] ? 1 : 0;
         }
 
-        if (!isset($node['comment']) && \is_string($node['help'] ?? null) && '' !== trim((string) $node['help'])) {
-            $node['comment'] = trim((string) $node['help']);
+        if (!isset($node['is_required']) && $this->containsRequiredRule((array) ($node['rules'] ?? []))) {
+            $node['is_required'] = 1;
         }
 
-        if (!isset($node['placeholder']) && \is_string($node['pl'] ?? null) && '' !== trim((string) $node['pl'])) {
-            $node['placeholder'] = trim((string) $node['pl']);
+        if (!isset($node['comment']) && array_key_exists('help', $node)) {
+            $comment = $this->normalizeHelpComment($node['help']);
+            if (null !== $comment) {
+                $node['comment'] = $comment;
+            }
         }
 
         if (!isset($node['length']) && isset($node['maxlength']) && is_numeric($node['maxlength'])) {
@@ -330,12 +346,20 @@ final class SchemaNormalizer
         }
 
         if ('switch' === ($node['type'] ?? null) && !isset($node['options'])) {
+            $activeText = isset($node['active-text']) && '' !== trim((string) $node['active-text'])
+                ? trim((string) $node['active-text'])
+                : '是';
+            $inactiveText = isset($node['inactive-text']) && '' !== trim((string) $node['inactive-text'])
+                ? trim((string) $node['inactive-text'])
+                : '否';
+            $activeValue = $node['active-value'] ?? 1;
+            $inactiveValue = $node['inactive-value'] ?? 0;
             $node['options'] = [
-                ['label' => '是', 'value' => 1],
-                ['label' => '否', 'value' => 0],
+                ['label' => $activeText, 'value' => $activeValue],
+                ['label' => $inactiveText, 'value' => $inactiveValue],
             ];
             if (!isset($node['default'])) {
-                $node['default'] = 0;
+                $node['default'] = $inactiveValue;
             }
         }
 
@@ -794,5 +818,45 @@ final class SchemaNormalizer
         }
 
         return $normalized;
+    }
+
+    /**
+     * @param array<int, mixed> $rules
+     */
+    private function containsRequiredRule(array $rules): bool
+    {
+        foreach ($rules as $rule) {
+            if (\is_string($rule) && 'required' === trim($rule)) {
+                return true;
+            }
+
+            if (\is_array($rule) && true === (bool) ($rule['required'] ?? false)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param mixed $help
+     */
+    private function normalizeHelpComment($help): ?string
+    {
+        if (\is_string($help) && '' !== trim($help)) {
+            return trim($help);
+        }
+
+        if (!\is_array($help)) {
+            return null;
+        }
+
+        foreach (['message', 'content', 'title'] as $key) {
+            if (\is_string($help[$key] ?? null) && '' !== trim((string) $help[$key])) {
+                return trim((string) $help[$key]);
+            }
+        }
+
+        return null;
     }
 }

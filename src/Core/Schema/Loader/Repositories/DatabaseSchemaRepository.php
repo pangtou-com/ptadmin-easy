@@ -148,11 +148,25 @@ class DatabaseSchemaRepository implements SchemaRepositoryInterface
         if (!isset($field['label']) && isset($field['title'])) {
             $field['label'] = $field['title'];
         }
-        if (!isset($field['default']) && isset($field['default_val'])) {
-            $field['default'] = $field['default_val'];
+        if (!array_key_exists('defaultValue', $field)) {
+            if (array_key_exists('default', $field)) {
+                $field['defaultValue'] = $field['default'];
+            } elseif (isset($field['default_val'])) {
+                $field['defaultValue'] = $field['default_val'];
+            }
         }
-        if (!isset($field['comment']) && isset($field['intro'])) {
-            $field['comment'] = (string) $field['intro'];
+        if (!array_key_exists('help', $field)) {
+            if (isset($field['comment'])) {
+                $field['help'] = (string) $field['comment'];
+            } elseif (isset($field['intro'])) {
+                $field['help'] = (string) $field['intro'];
+            }
+        }
+        if (!isset($field['maxlength']) && isset($field['length']) && is_numeric($field['length'])) {
+            $field['maxlength'] = (int) $field['length'];
+        }
+        if (!isset($field['required']) && isset($field['is_required'])) {
+            $field['required'] = 1 === (int) $field['is_required'];
         }
         if (!isset($field['extends']) && isset($field['extra'])) {
             $field['extends'] = $field['extra'];

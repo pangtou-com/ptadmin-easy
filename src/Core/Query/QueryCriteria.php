@@ -7,8 +7,8 @@ namespace PTAdmin\Easy\Core\Query;
 /**
  * 查询条件对象.
  *
- * 对外兼容旧格式 `filter/order`，同时支持更显式的
- * `filters/sorts/page/limit/paginate` DSL 结构。
+ * 统一使用显式的
+ * `filters/sorts/keyword/keyword_fields/page/limit/paginate` DSL 结构。
  */
 final class QueryCriteria
 {
@@ -85,11 +85,6 @@ final class QueryCriteria
             );
         }
 
-        foreach ($query['filter'] ?? [] as $field => $value) {
-            $operator = \is_array($value) ? 'in' : '=';
-            $filters[] = new QueryFilter((string) $field, $operator, $value);
-        }
-
         foreach ($query['sorts'] ?? [] as $sort) {
             if (!\is_array($sort) || !isset($sort['field'])) {
                 continue;
@@ -97,19 +92,13 @@ final class QueryCriteria
             $sorts[] = new QuerySort((string) $sort['field'], (string) ($sort['direction'] ?? 'asc'));
         }
 
-        foreach ($query['order'] ?? [] as $field => $direction) {
-            $sorts[] = new QuerySort((string) $field, (string) $direction);
-        }
-
         $keyword = null;
         if (isset($query['keyword']) && \is_scalar($query['keyword'])) {
             $keyword = (string) $query['keyword'];
-        } elseif (isset($query['search']) && \is_scalar($query['search'])) {
-            $keyword = (string) $query['search'];
         }
 
         $keywordFields = [];
-        foreach ($query['keyword_fields'] ?? ($query['search_fields'] ?? []) as $field) {
+        foreach ($query['keyword_fields'] ?? [] as $field) {
             if (\is_string($field) && '' !== $field) {
                 $keywordFields[] = $field;
             }

@@ -28,7 +28,8 @@ class QueryEngine
      */
     public function detail(SchemaDefinition $definition, $id, ?ExecutionContext $context = null)
     {
-        $builder = $definition->document()->query();
+        $document = $definition->document()->useContext($context);
+        $builder = $document->query();
         $this->applyScope($builder, $definition, 'detail', $context);
 
         $record = $builder->where($definition->primaryKey(), $id)->first();
@@ -49,7 +50,7 @@ class QueryEngine
     public function lists(SchemaDefinition $definition, array $query = [], ?ExecutionContext $context = null): array
     {
         $criteria = QueryCriteria::fromArray($query);
-        $document = $definition->document();
+        $document = $definition->document()->useContext($context);
         $builder = $document->query();
 
         $this->applyScope($builder, $definition, 'list', $context);
@@ -139,7 +140,7 @@ class QueryEngine
     public function aggregate(SchemaDefinition $definition, array $query = [], ?ExecutionContext $context = null): array
     {
         $criteria = QueryCriteria::fromArray($query);
-        $builder = $definition->document()->query();
+        $builder = $definition->document()->useContext($context)->query();
 
         $this->applyScope($builder, $definition, 'aggregate', $context);
 

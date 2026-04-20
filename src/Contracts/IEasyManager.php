@@ -15,8 +15,15 @@ declare(strict_types=1);
 
 namespace PTAdmin\Easy\Contracts;
 
+use PTAdmin\Easy\Core\Query\BuilderQueryApplier;
+
 interface IEasyManager
 {
+    /**
+     * 通用 Builder 查询 DSL 适配器.
+     */
+    public function builderQuery(): BuilderQueryApplier;
+
     /**
      * 是否为开发模式.
      *

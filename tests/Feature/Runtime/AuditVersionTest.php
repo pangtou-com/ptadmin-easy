@@ -28,7 +28,7 @@ it('审计日志会记录执行时使用的schema版本ID', function (): void {
                 'name' => 'excerpt',
                 'type' => 'text',
                 'label' => '摘要',
-                'length' => 120,
+                'maxlength' => 120,
             ],
         ]),
     ]), ['remark' => 'v2 草稿']);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace PTAdmin\Easy\Core\Schema\Mapping;
 
+use PTAdmin\Easy\Components\Component;
 use PTAdmin\Easy\Core\Schema\Definition\FieldDefinition;
-use PTAdmin\Easy\Easy;
 
 /**
  * 字段映射解析器.
@@ -15,6 +15,14 @@ use PTAdmin\Easy\Easy;
  */
 final class FieldMappingResolver
 {
+    /** @var Component */
+    private $componentManager;
+
+    public function __construct(?Component $componentManager = null)
+    {
+        $this->componentManager = $componentManager ?? new Component();
+    }
+
     /**
      * 解析字段的统一映射结构.
      *
@@ -42,6 +50,10 @@ final class FieldMappingResolver
                 'operators' => array_values((array) ($capabilities['operators'] ?? [])),
                 'searchable' => $this->isSearchable($field),
             ],
+            'security' => [
+                'secret' => $field->secret(),
+                'mask' => $field->maskConfig(),
+            ],
             'display' => $field->display(),
         ];
     }
@@ -53,7 +65,7 @@ final class FieldMappingResolver
      */
     private function componentMapping(FieldDefinition $field): array
     {
-        $component = (array) (Easy::component()->getComponent($field->type()) ?? []);
+        $component = (array) ($this->componentManager->getRawComponent($field->type()) ?? []);
 
         return [
             'type' => $field->type(),
@@ -171,19 +183,15 @@ final class FieldMappingResolver
      */
     private function defaultRuntimeCast(FieldDefinition $field, string $columnType): string
     {
-        if ('amount' === $field->type()) {
-            return 'float';
-        }
-
         if ('switch' === $field->type()) {
             return 'bool';
         }
 
-        if (\in_array($field->type(), ['date', 'datetime'], true)) {
+        if (\in_array($field->type(), ['date', 'datetime', 'time'], true)) {
             return 'string';
         }
 
-        if ('json' === $columnType || \in_array($field->type(), ['checkbox', 'cascader', 'json', 'clone'], true)) {
+        if ('json' === $columnType || \in_array($field->type(), ['checkbox', 'cascader', 'json', 'clone', 'time_range', 'date_range', 'datetime_range', 'image', 'attachment'], true)) {
             return 'array';
         }
 
@@ -203,12 +211,8 @@ final class FieldMappingResolver
             return true;
         }
 
-        if (\in_array($field->type(), ['checkbox', 'images', 'cascader', 'json', 'clone'], true)) {
+        if (\in_array($field->type(), ['checkbox', 'cascader', 'json', 'clone', 'time_range', 'date_range', 'datetime_range', 'image', 'attachment'], true)) {
             return true;
-        }
-
-        if (\in_array($field->type(), ['file', 'files', 'image', 'resource'], true)) {
-            return (int) data_get($field->metadata(), 'extends.limit', 1) > 1;
         }
 
         return false;
@@ -219,6 +223,10 @@ final class FieldMappingResolver
      */
     private function isSearchable(FieldDefinition $field): bool
     {
+        if ($field->secret()) {
+            return false;
+        }
+
         $resourceObject = $field->raw()->getResource();
         $resource = $resourceObject->toArray();
         $searchFields = array_values(array_filter((array) ($resource['search_fields'] ?? []), 'is_string'));

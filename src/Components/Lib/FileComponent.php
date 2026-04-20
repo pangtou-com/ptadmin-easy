@@ -22,17 +22,12 @@ class FileComponent extends AbstractComponent
     protected function initialize(): void
     {
         $type = $this->filed->getType();
-        // 当上传数据为多文件时，使用json保存
-        if ('images' === $type || !$this->isSingle()) {
+        if (\in_array($type, ['image', 'attachment'], true)) {
             $this->column_type = 'json';
 
             return;
         }
-        $this->column_type = 'string';
-    }
 
-    private function isSingle(): bool
-    {
-        return 1 === (int) $this->filed->getMetadata('extends.limit', 1);
+        $this->column_type = 'string';
     }
 }

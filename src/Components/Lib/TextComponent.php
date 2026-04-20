@@ -20,14 +20,14 @@ use PTAdmin\Easy\Components\AbstractComponent;
 class TextComponent extends AbstractComponent
 {
     protected $column_type = 'string';
-    private $editor = 'editor';
+    private $richText = 'rich_text';
 
     public function getColumnArguments(): array
     {
-        if ($this->editor === $this->filed->getType()) {
+        if ($this->richText === $this->filed->getType() || true === (bool) $this->filed->getMetadata('secret', false)) {
             return [$this->filed->getName()];
         }
-        $length = (int) $this->filed->getMetadata('length', 255);
+        $length = (int) $this->filed->getMetadata('maxlength', $this->filed->getMetadata('length', 255));
         // 当为密码字段时最小长度应为64
         if ('password' === $this->filed->getType()) {
             $length = max($length, 64);
@@ -39,7 +39,7 @@ class TextComponent extends AbstractComponent
     public function getColumnType(): string
     {
         // 富文本编辑时使用text
-        if ($this->editor === $this->filed->getType()) {
+        if ($this->richText === $this->filed->getType() || true === (bool) $this->filed->getMetadata('secret', false)) {
             return 'text';
         }
 

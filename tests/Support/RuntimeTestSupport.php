@@ -78,23 +78,21 @@ function easyRuntimeSchema(string $table, array $overrides = []): array
                 'name' => 'title',
                 'type' => 'text',
                 'label' => '标题',
-                'is_required' => 1,
-                'length' => 100,
+                'rules' => ['required', 'max:100'],
+                'maxlength' => 100,
             ],
             [
                 'name' => 'tenant_id',
                 'type' => 'number',
                 'label' => '租户',
-                'is_required' => 1,
-                'extends' => [
-                    'max' => 999999,
-                ],
+                'rules' => ['required'],
+                'max' => 999999,
             ],
             [
                 'name' => 'status',
                 'type' => 'radio',
                 'label' => '状态',
-                'default' => 1,
+                'defaultValue' => 1,
                 'options' => [
                     ['label' => '启用', 'value' => 1],
                     ['label' => '禁用', 'value' => 0],

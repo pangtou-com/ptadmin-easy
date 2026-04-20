@@ -40,41 +40,43 @@ class Component
     private static $COMPONENTS = [
         // 文本组件
         'text' => ['class' => TextComponent::class, 'label' => '文本框', 'group' => 'text'],
-        'email' => ['class' => TextComponent::class, 'label' => '邮件', 'group' => 'text'],
         'textarea' => ['class' => TextComponent::class, 'label' => '文本域', 'group' => 'text'],
         'password' => ['class' => TextComponent::class, 'label' => '密码框', 'group' => 'text'],
         'color' => ['class' => TextComponent::class, 'label' => '颜色选择器', 'group' => 'text'],
-        'url' => ['class' => TextComponent::class, 'label' => '链接', 'group' => 'text'],
-        'editor' => ['class' => TextComponent::class, 'label' => '富文本', 'group' => 'text'],
-        'icon' => ['class' => TextComponent::class, 'label' => 'ICON', 'group' => 'text'],
+        'rich_text' => ['class' => TextComponent::class, 'label' => '富文本', 'group' => 'text'],
+        'icon_input' => ['class' => TextComponent::class, 'label' => '图标输入', 'group' => 'text'],
         'auto' => ['class' => AutoComponent::class, 'label' => '自动编号', 'group' => 'text'],
 
         // 数字类型组件
         'number' => ['class' => NumberComponent::class, 'label' => '数字', 'group' => 'number'],
-        'amount' => ['class' => NumberComponent::class, 'label' => '金额', 'group' => 'number'],
 
         // 文件类型组件
-        'file' => ['class' => FileComponent::class, 'label' => '单文件上传', 'group' => 'file'],
-        'files' => ['class' => FileComponent::class, 'label' => '多文件上传', 'group' => 'file'],
         'image' => ['class' => FileComponent::class, 'label' => '图片', 'group' => 'file'],
-        'images' => ['class' => FileComponent::class, 'label' => '多图片上传', 'group' => 'file'],
+        'attachment' => ['class' => FileComponent::class, 'label' => '附件', 'group' => 'file'],
 
         // 选项类型组件
         'radio' => ['class' => SelectComponent::class, 'label' => '单选框', 'group' => 'select', 'append' => true, 'relation' => true],
         'checkbox' => ['class' => SelectComponent::class, 'label' => '多选选框', 'group' => 'select', 'append' => true, 'relation' => true],
         'select' => ['class' => SelectComponent::class, 'label' => '下拉选择', 'group' => 'select', 'append' => true, 'relation' => true],
+        'select-tree' => ['class' => SelectComponent::class, 'label' => '树选择', 'group' => 'select'],
         'switch' => ['class' => SelectComponent::class, 'label' => '开关', 'group' => 'select', 'append' => true],
         'cascader' => ['class' => JsonComponent::class, 'label' => '级联选择', 'group' => 'select'],
 
         // 时间类型组件
+        'time' => ['class' => TextComponent::class, 'label' => '时间', 'group' => 'date'],
+        'time_range' => ['class' => JsonComponent::class, 'label' => '时间区间', 'group' => 'date'],
         'date' => ['class' => DateComponent::class, 'label' => '日期选择', 'group' => 'date'],
+        'date_range' => ['class' => JsonComponent::class, 'label' => '日期区间', 'group' => 'date'],
         'datetime' => ['class' => DateComponent::class, 'label' => '时间日期', 'group' => 'date'],
-        // 'date_range' => ['class' => DateComponent::class, 'label' => '时间区间', 'group' => 'date'],
+        'datetime_range' => ['class' => JsonComponent::class, 'label' => '日期时间区间', 'group' => 'date'],
+
+        // 交互字段
+        'rate' => ['class' => NumberComponent::class, 'label' => '评分', 'group' => 'number'],
+        'slider' => ['class' => NumberComponent::class, 'label' => '滑块', 'group' => 'number'],
 
         // 功能组件
         'block' => ['class' => BlockComponent::class, 'label' => '功能块', 'is_virtual' => true, 'group' => 'func'],
         'link' => ['class' => LinkComponent::class, 'label' => '链接表', 'group' => 'func', 'append' => true, 'relation' => true],
-        'resource' => ['class' => FileComponent::class, 'label' => '资源', 'group' => 'file'],
         'json' => ['class' => JsonComponent::class, 'label' => 'Json', 'group' => 'func'],
         'table' => ['class' => JsonComponent::class, 'label' => '表格', 'is_virtual' => true, 'group' => 'func', 'relation' => true],
         'mirror' => ['class' => JsonComponent::class, 'label' => '镜像数据', 'is_virtual' => true, 'group' => 'func'],
@@ -143,12 +145,22 @@ class Component
      */
     public function getComponent(string $type): ?array
     {
-        $component = self::$COMPONENTS[$type] ?? null;
+        $component = $this->getRawComponent($type);
         if (null === $component) {
             return null;
         }
 
         return $this->translateComponentDefinition($type, $component);
+    }
+
+    public function getRawComponent(string $type): ?array
+    {
+        return self::$COMPONENTS[$type] ?? null;
+    }
+
+    public function hasComponent(string $type): bool
+    {
+        return isset(self::$COMPONENTS[$type]);
     }
 
     /**

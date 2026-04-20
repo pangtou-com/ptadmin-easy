@@ -98,11 +98,11 @@ final class SchemaNormalizerTest extends TestCase
                                     'type' => 'switch',
                                     'label' => '状态',
                                     'required' => true,
-                                    'def' => 1,
+                                    'defaultValue' => 1,
                                 ],
                                 [
                                     'name' => 'cover',
-                                    'type' => 'resource',
+                                    'type' => 'image',
                                     'label' => '封面',
                                     'help' => '图片资源',
                                 ],
@@ -111,7 +111,7 @@ final class SchemaNormalizerTest extends TestCase
                                     'type' => 'cascader',
                                     'label' => '父级栏目',
                                     'maxlength' => 255,
-                                    'pl' => '请选择',
+                                    'placeholder' => '请选择',
                                     'max' => 255,
                                 ],
                                 [
@@ -349,6 +349,38 @@ final class SchemaNormalizerTest extends TestCase
         $this->assertSame('hasOne', $schema['fields'][0]['extends']['type']);
         $this->assertSame('hasOne', $schema['fields'][0]['extends']['relation_kind']);
         $this->assertSame('set_null', $schema['fields'][0]['extends']['on_delete']);
+    }
+
+    public function test_it_preserves_top_level_common_nodes_in_layout_tree(): void
+    {
+        $normalizer = new SchemaNormalizer();
+
+        $schema = $normalizer->normalize([
+            'name' => 'articles',
+            'fields' => [
+                [
+                    'type' => 'button',
+                    'text' => '提交',
+                    'action' => 'form.submit',
+                ],
+                [
+                    'type' => 'icon',
+                    'icon' => 'ep:Edit',
+                ],
+                [
+                    'name' => 'title',
+                    'type' => 'text',
+                    'label' => '标题',
+                ],
+            ],
+        ]);
+
+        $this->assertSame(['title'], array_column($schema['fields'], 'name'));
+        $this->assertArrayHasKey('layout', $schema);
+        $this->assertCount(3, $schema['layout']['nodes']);
+        $this->assertSame('button', $schema['layout']['nodes'][0]['type']);
+        $this->assertSame('icon', $schema['layout']['nodes'][1]['type']);
+        $this->assertSame('text', $schema['layout']['nodes'][2]['type']);
     }
 
 }

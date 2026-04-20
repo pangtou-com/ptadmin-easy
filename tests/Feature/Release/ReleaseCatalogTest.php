@@ -96,7 +96,7 @@ it('回滚后会重建 mod_fields 当前版本缓存', function (): void {
                 'name' => 'excerpt',
                 'type' => 'text',
                 'label' => '摘要',
-                'length' => 120,
+                'maxlength' => 120,
             ],
         ]),
     ]);

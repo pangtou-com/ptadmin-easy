@@ -120,7 +120,7 @@ class SelectComponent extends AbstractComponent
 
     private function setColumnTypeString(): void
     {
-        $length = (int) $this->filed->getMetadata('length');
+        $length = (int) $this->filed->getMetadata('maxlength', $this->filed->getMetadata('length'));
         $this->column_type = 'string';
         $this->args = ['length' => max($length, 30)];
     }

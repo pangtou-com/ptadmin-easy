@@ -18,6 +18,7 @@ namespace PTAdmin\Easy;
 use Illuminate\Support\Facades\Facade;
 use PTAdmin\Easy\Components\Component;
 use PTAdmin\Easy\Contracts\IEasyManager;
+use PTAdmin\Easy\Core\Query\BuilderQueryApplier;
 use PTAdmin\Easy\Engine\Model\Document;
 use PTAdmin\Easy\Engine\Schema\Schema;
 use PTAdmin\Easy\Handle\ChartHandle;
@@ -35,6 +36,7 @@ use PTAdmin\Easy\Handle\SchemaHandle;
  * @method static mixed hooks()                                               事件处理钩子对象
  * @method static mixed scopes()                                              数据范围管理器
  * @method static Document document(string $resource, string $module = '')    文档模型
+ * @method static BuilderQueryApplier builderQuery()                          通用 Builder 查询 DSL 适配器
  * @method static ChartHandle charts(array|string $resource, string $module = '') 统计模块句柄
  * @method static bool isDevelop()                                            是否为开发模式
  *

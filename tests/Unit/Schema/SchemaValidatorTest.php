@@ -81,6 +81,21 @@ final class SchemaValidatorTest extends TestCase
         ]);
     }
 
+    public function test_it_rejects_unsupported_field_type(): void
+    {
+        $validator = new SchemaValidator();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Schema field [title] type [legacy_editor] is not supported.');
+
+        $validator->validate([
+            'name' => 'articles',
+            'fields' => [
+                ['name' => 'title', 'type' => 'legacy_editor', 'label' => '标题'],
+            ],
+        ]);
+    }
+
     public function test_it_rejects_unknown_chart_field_inside_layout_schema(): void
     {
         $validator = new SchemaValidator();
@@ -119,6 +134,49 @@ final class SchemaValidatorTest extends TestCase
         $validator->validate([
             'fields' => [
                 ['name' => 'title', 'type' => 'text', 'label' => '标题'],
+            ],
+        ]);
+    }
+
+    public function test_it_rejects_field_with_both_secret_and_mask(): void
+    {
+        $validator = new SchemaValidator();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Schema field [secret] cannot define both secret and mask.');
+
+        $validator->validate([
+            'name' => 'articles',
+            'fields' => [
+                [
+                    'name' => 'secret',
+                    'type' => 'text',
+                    'label' => '密钥',
+                    'secret' => true,
+                    'mask' => [
+                        'strategy' => 'phone',
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function test_it_rejects_sensitive_config_on_non_text_field(): void
+    {
+        $validator = new SchemaValidator();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Schema field [cover] sensitive config is only supported for text/textarea.');
+
+        $validator->validate([
+            'name' => 'articles',
+            'fields' => [
+                [
+                    'name' => 'cover',
+                    'type' => 'image',
+                    'label' => '封面',
+                    'mask' => true,
+                ],
             ],
         ]);
     }

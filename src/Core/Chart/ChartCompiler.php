@@ -113,18 +113,18 @@ class ChartCompiler
     {
         $query = (array) ($definition['query'] ?? []);
 
-        foreach (['filters', 'filter', 'sorts', 'sort', 'order', 'groups', 'aggregates', 'metrics', 'keyword', 'keyword_fields', 'limit', 'page', 'paginate'] as $key) {
+        foreach (['filters', 'sorts', 'sort', 'groups', 'aggregates', 'metrics', 'keyword', 'keyword_fields', 'limit', 'page', 'paginate'] as $key) {
             if (!isset($query[$key]) && isset($definition[$key])) {
                 $query[$key] = $definition[$key];
             }
         }
 
-        $filters = $this->normalizeFilters($query['filters'] ?? ($query['filter'] ?? []));
+        $filters = $this->normalizeFilters($query['filters'] ?? []);
         if (0 !== \count($filters)) {
             $query['filters'] = $filters;
         }
 
-        $sorts = $this->normalizeSorts($query['sorts'] ?? ($query['sort'] ?? ($query['order'] ?? [])));
+        $sorts = $this->normalizeSorts($query['sorts'] ?? ($query['sort'] ?? []));
         if (0 !== \count($sorts)) {
             $query['sorts'] = $sorts;
         }
@@ -153,7 +153,7 @@ class ChartCompiler
             $query['aggregates'] = $aggregates;
         }
 
-        unset($query['filter'], $query['sort'], $query['order'], $query['group'], $query['group_by'], $query['metrics']);
+        unset($query['sort'], $query['group'], $query['group_by'], $query['metrics']);
 
         return $query;
     }
