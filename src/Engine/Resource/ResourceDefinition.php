@@ -104,7 +104,7 @@ class ResourceDefinition implements IResource
     public function getRules($id = 0): array
     {
         $cacheKey = null === $id ? 'create' : 'update:'.(string) $id;
-        if (!isset($this->rules[$cacheKey])) {
+        if (!isset($this->rules[$cacheKey]) || $this->hasDynamicRuleFields()) {
             $rules = $attributes = $messages = [];
             foreach ($this->fields as $field) {
                 $rule = $field->getRules($id);
@@ -123,6 +123,17 @@ class ResourceDefinition implements IResource
         }
 
         return $this->rules[$cacheKey];
+    }
+
+    private function hasDynamicRuleFields(): bool
+    {
+        foreach ($this->fields as $field) {
+            if (method_exists($field, 'isSourceResource') && $field->isSourceResource()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function getAppends(): array

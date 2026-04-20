@@ -199,7 +199,9 @@ it('restrict 删除策略会阻止删除存在子记录的主记录', function (
 
     expect(function () use ($articleTable, $article): void {
         Easy::doc($articleTable)->delete($article->id);
-    })->toThrow(EasyException::class, '字段【comments】存在关联子记录，当前删除策略为 restrict，无法删除主记录。');
+    })->toThrow(EasyException::class, __('ptadmin-easy::messages.errors.relation_restrict', [
+        'field' => 'comments',
+    ]));
 
     expect(DB::table($articleTable)->count())->toBe(1)
         ->and(DB::table($commentTable)->count())->toBe(1);

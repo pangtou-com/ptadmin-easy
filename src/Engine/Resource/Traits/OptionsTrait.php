@@ -13,6 +13,10 @@ trait OptionsTrait
 
     public function getOptions(): array
     {
+        if ($this->isSourceResource()) {
+            $this->options = null;
+        }
+
         if (null !== $this->options) {
             return $this->options;
         }
