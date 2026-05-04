@@ -263,7 +263,13 @@ final class FieldDefinition
     {
         $value = $this->field->getMetadata('maxlength', $this->field->getMetadata('length'));
 
-        return \is_numeric($value) ? (int) $value : null;
+        if (!\is_numeric($value)) {
+            return null;
+        }
+
+        $length = (int) $value;
+
+        return $length > 0 ? $length : null;
     }
 
     public function minValue()

@@ -39,6 +39,7 @@ use PTAdmin\Easy\Exceptions\EasyException;
 use PTAdmin\Easy\Handle\ChartHandle;
 use PTAdmin\Easy\Handle\DocHandle;
 use PTAdmin\Easy\Handle\ReleaseHandle;
+use PTAdmin\Easy\Handle\ResourceCatalogHandle;
 use PTAdmin\Easy\Handle\ResourceHandle;
 use PTAdmin\Easy\Handle\SchemaHandle;
 
@@ -73,6 +74,9 @@ final class EasyManager implements IEasyManager
 
     /** @var null|ScopeManager */
     private $scopeManager;
+
+    /** @var null|ResourceCatalogHandle */
+    private $resourceCatalogHandle;
 
     /** @var ResourceHandle[] 已解析的内部资源句柄集合. */
     private static $handles = [];
@@ -174,6 +178,18 @@ final class EasyManager implements IEasyManager
         }
 
         return self::$releaseHandles[$name] = new ReleaseHandle($this->resourceHandle($resource, $module));
+    }
+
+    /**
+     * 资源目录入口.
+     */
+    public function resources(): ResourceCatalogHandle
+    {
+        if (null === $this->resourceCatalogHandle) {
+            $this->resourceCatalogHandle = new ResourceCatalogHandle($this->versionStore());
+        }
+
+        return $this->resourceCatalogHandle;
     }
 
     /**

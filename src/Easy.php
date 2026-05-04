@@ -24,12 +24,14 @@ use PTAdmin\Easy\Engine\Schema\Schema;
 use PTAdmin\Easy\Handle\ChartHandle;
 use PTAdmin\Easy\Handle\DocHandle;
 use PTAdmin\Easy\Handle\ReleaseHandle;
+use PTAdmin\Easy\Handle\ResourceCatalogHandle;
 use PTAdmin\Easy\Handle\SchemaHandle;
 
 /**
  * @method static DocHandle doc(array|string $resource, string $module = '')      资源运行时句柄
  * @method static SchemaHandle schema(array|string $resource, string $module = '') schema 配置句柄
  * @method static ReleaseHandle release(array|string $resource, string $module = '') 资源发布句柄
+ * @method static ResourceCatalogHandle resources()                              资源目录句柄
  * @method static Schema table($resource, string $module = "")                    数据表处理对象，用于新增表结构，更新表结构，删除表结构等
  * @method static bool hasResource(string $resource)                              资源是否存在
  * @method static Component component()                                       组件管理器

@@ -69,6 +69,32 @@ final class ReleaseHandle
     }
 
     /**
+     * 保存资源级草稿，允许 fields 为空。
+     *
+     * @param array<string, mixed> $schema
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    public function saveResourceDraft(array $schema, array $options = []): array
+    {
+        return $this->handle->saveResourceDraft($schema, $options);
+    }
+
+    /**
+     * 更新资源级草稿，允许 fields 为空。
+     *
+     * @param array<string, mixed> $schema
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    public function updateResourceDraft(int $versionId, array $schema, array $options = []): array
+    {
+        return $this->handle->updateResourceDraft($versionId, $schema, $options);
+    }
+
+    /**
      * 发布 schema 或草稿版本。
      *
      * 推荐使用 `publish($draftVersionId)`，避免再次传整份 schema。
@@ -185,6 +211,105 @@ final class ReleaseHandle
     public function updateDraft(int $versionId, array $schema, array $options = []): array
     {
         return $this->handle->updateDraft($versionId, $schema, $options);
+    }
+
+    /**
+     * 返回当前可编辑草稿 schema。
+     *
+     * @return array<string, mixed>
+     */
+    public function draftSchema(?int $draftId = null): array
+    {
+        return $this->handle->draftSchema($draftId);
+    }
+
+    /**
+     * 返回当前可编辑草稿字段。
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function fields(?int $draftId = null): array
+    {
+        return $this->handle->draftFields($draftId);
+    }
+
+    /**
+     * 添加字段到当前草稿。
+     *
+     * @param array<string, mixed> $field
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    public function addField(array $field, array $options = []): array
+    {
+        return $this->handle->addField($field, $options);
+    }
+
+    /**
+     * 更新当前草稿中的字段。
+     *
+     * @param array<string, mixed> $patch
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    public function updateField(string $field, array $patch, array $options = []): array
+    {
+        return $this->handle->updateField($field, $patch, $options);
+    }
+
+    /**
+     * 重命名当前草稿中的字段。
+     *
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    public function renameField(string $from, string $to, array $options = []): array
+    {
+        return $this->handle->renameField($from, $to, $options);
+    }
+
+    /**
+     * 删除当前草稿中的字段。
+     *
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    public function deleteField(string $field, array $options = []): array
+    {
+        return $this->handle->deleteField($field, $options);
+    }
+
+    /**
+     * 重排当前草稿字段。
+     *
+     * @param string[]             $fieldNames
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    public function reorderFields(array $fieldNames, array $options = []): array
+    {
+        return $this->handle->reorderFields($fieldNames, $options);
+    }
+
+    /**
+     * 预览当前草稿发布计划。
+     */
+    public function planDraft(?int $draftId = null)
+    {
+        return $this->handle->planDraft($draftId);
+    }
+
+    /**
+     * 发布当前草稿。
+     */
+    public function publishDraft(?int $draftId = null, array $options = []): PublishResult
+    {
+        return $this->handle->publishDraft($draftId, $options);
     }
 
     /**

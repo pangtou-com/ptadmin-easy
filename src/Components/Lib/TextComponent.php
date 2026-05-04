@@ -28,6 +28,9 @@ class TextComponent extends AbstractComponent
             return [$this->filed->getName()];
         }
         $length = (int) $this->filed->getMetadata('maxlength', $this->filed->getMetadata('length', 255));
+        if ($length <= 0) {
+            $length = 255;
+        }
         // 当为密码字段时最小长度应为64
         if ('password' === $this->filed->getType()) {
             $length = max($length, 64);

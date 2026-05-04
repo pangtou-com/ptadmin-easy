@@ -570,7 +570,7 @@ class ResourceField implements IResourceField
             }
         }
 
-        if (\is_numeric($length) && \in_array($type, ['text', 'textarea', 'password', 'color', 'icon_input', 'rich_text', 'time'], true)) {
+        if (\is_numeric($length) && (int) $length > 0 && \in_array($type, ['text', 'textarea', 'password', 'color', 'icon_input', 'rich_text', 'time'], true)) {
             $rules[] = 'max:'.(string) $length;
         }
 

@@ -10,6 +10,7 @@
 ## 已完成
 
 ### 入口拆分
+- 已完成 `Easy::resources(...)`
 - 已完成 `Easy::schema(...)`
 - 已完成 `Easy::release(...)`
 - 已完成 `Easy::doc(...)`
@@ -24,8 +25,12 @@
 - `mod_fields` 已作为发布后字段编译缓存使用
 
 ### schema 生命周期
+- 已支持模型目录列表
+- 已支持模型空字段草稿创建
 - 已支持保存草稿
 - 已支持更新草稿
+- 已支持字段草稿新增 / 更新 / 删除 / 排序
+- 已支持当前草稿预览与发布快捷方法
 - 已支持按版本 ID 预览发布
 - 已支持按版本 ID 发布
 - 已支持版本历史
@@ -57,6 +62,8 @@
 
 ### 文档
 - 已补齐 [schema-lifecycle.md](/guide/schema-lifecycle.md)
+- 已补齐 [resource-management.md](/guide/resource-management.md)
+- 已补齐 [field-draft.md](/guide/field-draft.md)
 - 已补齐 [relation.md](/guide/relation.md)
 - 已补齐 [quickstart-demo.md](/guide/quickstart-demo.md)
 - 已补齐 [todo.md](/guide/todo.md)
@@ -97,6 +104,14 @@
 ## 建议下一步
 
 建议按以下优先级继续推进：
+
+### P0 模型管理页与字段管理页联调
+- 先落地“模型列表页 -> 模型详情页 -> 字段维护 -> 发布预览 -> 正式发布”主流程
+- 模型列表页直接消费 `resources()->lists()` 的 `data + stats + pagination`
+- 模型详情页直接消费 `resources()->detail()` 的 `resource + summary`
+- 字段管理页直接消费 `draftSchema()/fields()/addField()/updateField()/renameField()/deleteField()/reorderFields()`
+- 发布面板直接消费 `planDraft()/publishDraft()`，历史版本区域直接复用 `versionPanel()/versionDetail()`
+- 先跑通页面主链，再继续扩大前端拖拽协议和高级增强能力
 
 ### P0 前端 schema 协议最终收口
 - 完整收口前端拖拽 schema JSON 协议

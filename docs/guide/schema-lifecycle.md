@@ -6,9 +6,12 @@
 
 当前已经可稳定使用的范围包括：
 
+- `Easy::resources(...)`
 - `Easy::schema(...)`
 - `Easy::release(...)`
 - `Easy::doc(...)`
+- 模型目录列表 / 模型草稿创建
+- 字段草稿新增 / 更新 / 删除 / 排序
 - 草稿保存 / 更新
 - 按版本 ID 预览发布
 - 按版本 ID 发布
@@ -25,6 +28,8 @@
 
 ## 推荐使用顺序
 
+### 整体 schema 提交流程
+
 1. 前端生成 schema JSON
 2. 使用 `Easy::schema($schema)` 做编译、校验、蓝图预览
 3. 使用 `Easy::release($resource, $module)` 保存草稿
@@ -32,13 +37,24 @@
 5. 使用草稿版本 ID 正式发布
 6. 发布成功后，使用 `Easy::doc($resource, $module)` 执行运行时数据操作
 
+### 分步建模流程
+
+1. 使用 `Easy::resources()->createDraft(...)` 创建模型草稿
+2. 使用 `Easy::release($resource, $module)->addField(...)` 维护字段草稿
+3. 使用 `Easy::release($resource, $module)->planDraft()` 预览发布计划
+4. 使用 `Easy::release($resource, $module)->publishDraft()` 发布当前草稿
+5. 发布成功后，使用 `Easy::doc($resource, $module)` 执行运行时数据操作
+
 ## 入口职责
+
+### `Easy::resources()`
+- 负责插件模型列表、模型详情、模型草稿创建
 
 ### `Easy::schema($schema)`
 - 负责 schema 编译、校验、蓝图预览、字段映射查看
 
 ### `Easy::release($resource, $module)`
-- 负责 schema 草稿、发布、回滚、版本历史、版本详情、版本对比
+- 负责 schema 草稿、字段草稿、发布、回滚、版本历史、版本详情、版本对比
 
 ### `Easy::doc($resource, $module)`
 - 负责已发布资源的数据 CRUD、查询、关联加载、聚合

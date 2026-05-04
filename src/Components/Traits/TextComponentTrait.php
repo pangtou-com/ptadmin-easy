@@ -46,36 +46,37 @@ trait TextComponentTrait
     {
         $length = $this->getMetadata('maxlength', $this->getMetadata('length', 255));
 
-        return 'max:'.$length;
+        return \is_numeric($length) && (int) $length > 0 ? 'max:'.$length : null;
     }
 
     protected function getTextareaRule(): ?string
     {
         $length = $this->getMetadata('maxlength', $this->getMetadata('length', 255));
 
-        return 'max:'.$length;
+        return \is_numeric($length) && (int) $length > 0 ? 'max:'.$length : null;
     }
 
     protected function getPasswordRule(): array
     {
         $length = $this->getMetadata('maxlength', $this->getMetadata('length', 255));
         $min = $this->getMetadata('min', 6);
+        $max = \is_numeric($length) && (int) $length > 0 ? (int) $length : 255;
 
-        return ['min:'.$min, 'max:'.$length];
+        return ['min:'.$min, 'max:'.$max];
     }
 
     protected function getColorRule(): string
     {
         $length = $this->getMetadata('maxlength', $this->getMetadata('length', 255));
 
-        return 'max:'.$length;
+        return \is_numeric($length) && (int) $length > 0 ? 'max:'.$length : 'max:255';
     }
 
     protected function getIconRule(): string
     {
         $length = $this->getMetadata('maxlength', $this->getMetadata('length', 255));
 
-        return 'max:'.$length;
+        return \is_numeric($length) && (int) $length > 0 ? 'max:'.$length : 'max:255';
     }
 
     protected function getDateRule(): array

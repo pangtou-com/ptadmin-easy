@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PTAdmin\Easy\Core\Schema\Versioning;
 
+use Illuminate\Support\Arr;
 use PTAdmin\Easy\Core\Migration\MigrationPlanner;
 use PTAdmin\Easy\Core\Migration\MigrationPlan;
 use PTAdmin\Easy\Core\Migration\SchemaSynchronizer;
@@ -13,6 +14,7 @@ use PTAdmin\Easy\Core\Schema\Loader\SchemaLoader;
 use PTAdmin\Easy\Core\Schema\Registry\PublishedResourceCatalog;
 use PTAdmin\Easy\Core\Schema\Versioning\Contracts\SchemaVersionStoreInterface;
 use PTAdmin\Easy\Core\Schema\Versioning\Stores\DatabaseSchemaVersionStore;
+use PTAdmin\Easy\Exceptions\SchemaFieldReferenceException;
 
 /**
  * Schema 发布编排器.
@@ -26,6 +28,9 @@ use PTAdmin\Easy\Core\Schema\Versioning\Stores\DatabaseSchemaVersionStore;
  */
 class SchemaPublisher
 {
+    /** @var string[] */
+    private const LAYOUT_CHILD_KEYS = ['children', 'nodes', 'items', 'body', 'columns', 'tabs', 'fields', 'schemas'];
+
     /** @var SchemaLoader */
     private $loader;
 
@@ -111,6 +116,28 @@ class SchemaPublisher
         $options['mod_id'] = (int) ($resourceRecord['id'] ?? 0);
 
         return $this->versionStore->saveDraft($resource, $schema, $module, $options);
+    }
+
+    /**
+     * 保存资源级草稿。
+     *
+     * 该路径服务于“先建模型，后维护字段”的后台场景，允许
+     * `fields` 为空；正式发布仍会走严格 schema 校验。
+     *
+     * @param array<string, mixed> $schema
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    public function saveResourceDraft(string $resource, array $schema, string $module = '', array $options = []): array
+    {
+        $schema = $this->normalizeManagedSchema($resource, $schema, $module);
+        $this->validateDraftSchema($schema);
+
+        $resourceRecord = $this->ensureDraftResource($resource, $schema, (string) $schema['module']);
+        $options['mod_id'] = (int) ($resourceRecord['id'] ?? 0);
+
+        return $this->versionStore->saveDraft($resource, $schema, (string) $schema['module'], $options);
     }
 
     /**
@@ -254,6 +281,284 @@ class SchemaPublisher
         }
 
         return $updated;
+    }
+
+    /**
+     * 以草稿校验规则更新版本，允许字段为空.
+     *
+     * @param array<string, mixed> $schema
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    public function updateResourceDraft(int $versionId, array $schema, string $resource = '', string $module = '', array $options = []): array
+    {
+        $record = $this->resolveVersionRecord($versionId, $resource, $module, 'draft');
+        $resource = (string) $record['resource'];
+        $module = (string) $record['module'];
+        $schema = $this->normalizeManagedSchema($resource, $schema, $module);
+        $this->validateDraftSchema($schema);
+
+        $resourceRecord = $this->ensureDraftResource($resource, $schema, $module);
+        $options['mod_id'] = (int) ($resourceRecord['id'] ?? 0);
+
+        $updated = $this->versionStore->updateDraft($versionId, $schema, $options);
+        if (null === $updated) {
+            throw new \RuntimeException("Schema draft [{$versionId}] could not be updated.");
+        }
+
+        return $updated;
+    }
+
+    /**
+     * 返回可编辑草稿 schema；不存在草稿时返回当前发布 schema 或空 schema。
+     *
+     * @return array<string, mixed>
+     */
+    public function draftSchema(string $resource, string $module = '', ?int $draftId = null): array
+    {
+        if (null !== $draftId) {
+            $record = $this->resolveVersionRecord($draftId, $resource, $module, 'draft');
+
+            return (array) ($record['schema'] ?? []);
+        }
+
+        $draft = $this->latestDraft($resource, $module);
+        if (null !== $draft) {
+            return (array) ($draft['schema'] ?? []);
+        }
+
+        $current = $this->currentVersion($resource, $module);
+        if (null !== $current) {
+            return (array) ($current['schema'] ?? []);
+        }
+
+        return $this->normalizeManagedSchema($resource, [
+            'title' => $resource,
+            'fields' => [],
+        ], $module);
+    }
+
+    /**
+     * 返回当前可编辑草稿字段.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function draftFields(string $resource, string $module = '', ?int $draftId = null): array
+    {
+        return array_values(array_filter((array) ($this->draftSchema($resource, $module, $draftId)['fields'] ?? []), 'is_array'));
+    }
+
+    /**
+     * 添加字段到当前草稿.
+     *
+     * @param array<string, mixed> $field
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    public function addDraftField(string $resource, string $module, array $field, array $options = []): array
+    {
+        $record = $this->editableDraftRecord($resource, $module, $options);
+        $schema = (array) ($record['schema'] ?? []);
+        $fields = array_values(array_filter((array) ($schema['fields'] ?? []), 'is_array'));
+        $name = $this->fieldName($field);
+        if (null !== $this->findFieldIndex($fields, $name)) {
+            throw new \InvalidArgumentException("Schema field [{$name}] is duplicated.");
+        }
+
+        $fields[] = $field;
+        $schema['fields'] = $fields;
+
+        return $this->updateResourceDraft((int) $record['id'], $schema, $resource, $module, $options);
+    }
+
+    /**
+     * 更新草稿字段.
+     *
+     * @param array<string, mixed> $patch
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    public function updateDraftField(string $resource, string $module, string $field, array $patch, array $options = []): array
+    {
+        if (isset($patch['name']) && (string) $patch['name'] !== $field) {
+            throw new \InvalidArgumentException('Field rename is not supported by updateField().');
+        }
+        unset($patch['name']);
+
+        $record = $this->editableDraftRecord($resource, $module, $options);
+        $schema = (array) ($record['schema'] ?? []);
+        $fields = array_values(array_filter((array) ($schema['fields'] ?? []), 'is_array'));
+        $index = $this->findFieldIndex($fields, $field);
+        if (null === $index) {
+            throw new \InvalidArgumentException("Schema field [{$field}] does not exist.");
+        }
+
+        $fields[$index] = array_replace_recursive($fields[$index], $patch);
+        $schema['fields'] = $fields;
+
+        return $this->updateResourceDraft((int) $record['id'], $schema, $resource, $module, $options);
+    }
+
+    /**
+     * 重命名草稿字段。
+     *
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    public function renameDraftField(string $resource, string $module, string $from, string $to, array $options = []): array
+    {
+        $to = trim($to);
+        if ('' === $to) {
+            throw new \InvalidArgumentException('Schema field name is invalid.');
+        }
+        if ($from === $to) {
+            return $this->editableDraftRecord($resource, $module, $options);
+        }
+
+        $record = $this->editableDraftRecord($resource, $module, $options);
+        $schema = (array) ($record['schema'] ?? []);
+        $fields = array_values(array_filter((array) ($schema['fields'] ?? []), 'is_array'));
+        $index = $this->findFieldIndex($fields, $from);
+        if (null === $index) {
+            throw new \InvalidArgumentException("Schema field [{$from}] does not exist.");
+        }
+        if (null !== $this->findFieldIndex($fields, $to)) {
+            throw new \InvalidArgumentException("Schema field [{$to}] is duplicated.");
+        }
+
+        $current = $this->currentVersion($resource, $module);
+        $currentFields = array_values(array_filter((array) data_get($current ?? [], 'schema.fields', []), 'is_array'));
+        $renameFrom = $this->resolveRenameFrom($fields[$index], $from, $to, $currentFields);
+        $references = $this->collectFieldReferences($schema, $from);
+
+        $fields[$index]['name'] = $to;
+        if (null !== $renameFrom) {
+            $fields[$index]['rename_from'] = $renameFrom;
+        } else {
+            unset($fields[$index]['rename_from']);
+            if (isset($fields[$index]['extends']) && \is_array($fields[$index]['extends'])) {
+                unset($fields[$index]['extends']['rename_from']);
+            }
+        }
+
+        $schema['fields'] = $fields;
+        $schema = $this->renameFieldReferences($schema, $from, $to);
+        $schema = $this->renameFieldInLayout($schema, $from, $to);
+
+        $updated = $this->updateResourceDraft((int) $record['id'], $schema, $resource, $module, $options);
+        $updated['summary'] = [
+            'type' => 'rename_field',
+            'field' => $to,
+            'from' => $from,
+            'to' => $to,
+            'rename_from' => $renameFrom,
+            'references_updated' => $references,
+        ];
+
+        return $updated;
+    }
+
+    /**
+     * 删除草稿字段.
+     *
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    public function deleteDraftField(string $resource, string $module, string $field, array $options = []): array
+    {
+        $record = $this->editableDraftRecord($resource, $module, $options);
+        $schema = (array) ($record['schema'] ?? []);
+        $references = $this->collectFieldReferences($schema, $field);
+        if (0 !== \count($references)) {
+            if (true === (bool) ($options['cleanup_references'] ?? false)) {
+                $schema = $this->cleanupFieldReferences($schema, $field);
+            } else {
+                throw new SchemaFieldReferenceException($field, 'delete', $references);
+            }
+        }
+
+        $fields = array_values(array_filter((array) ($schema['fields'] ?? []), 'is_array'));
+        $index = $this->findFieldIndex($fields, $field);
+        if (null === $index) {
+            throw new \InvalidArgumentException("Schema field [{$field}] does not exist.");
+        }
+
+        unset($fields[$index]);
+        $schema['fields'] = array_values($fields);
+        $schema = $this->removeFieldFromLayout($schema, $field);
+
+        $updated = $this->updateResourceDraft((int) $record['id'], $schema, $resource, $module, $options);
+        $updated['summary'] = [
+            'type' => 'delete_field',
+            'field' => $field,
+            'cleanup_applied' => true === (bool) ($options['cleanup_references'] ?? false),
+            'references_removed' => $references,
+        ];
+
+        return $updated;
+    }
+
+    /**
+     * 重排草稿字段.
+     *
+     * @param string[]             $fieldNames
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    public function reorderDraftFields(string $resource, string $module, array $fieldNames, array $options = []): array
+    {
+        $record = $this->editableDraftRecord($resource, $module, $options);
+        $schema = (array) ($record['schema'] ?? []);
+        $fields = array_values(array_filter((array) ($schema['fields'] ?? []), 'is_array'));
+        $byName = [];
+        foreach ($fields as $field) {
+            $byName[(string) ($field['name'] ?? '')] = $field;
+        }
+
+        $ordered = [];
+        foreach ($fieldNames as $name) {
+            if (!\is_string($name) || !isset($byName[$name])) {
+                continue;
+            }
+            $ordered[] = $byName[$name];
+            unset($byName[$name]);
+        }
+
+        $schema['fields'] = array_values(array_merge($ordered, array_values($byName)));
+
+        return $this->updateResourceDraft((int) $record['id'], $schema, $resource, $module, $options);
+    }
+
+    /**
+     * 预览当前草稿发布计划.
+     */
+    public function planDraft(string $resource, string $module = '', ?int $draftId = null): MigrationPlan
+    {
+        $record = null === $draftId ? $this->latestDraft($resource, $module) : $this->resolveVersionRecord($draftId, $resource, $module, 'draft');
+        if (null === $record) {
+            throw new \InvalidArgumentException('Latest schema draft does not exist.');
+        }
+
+        return $this->planVersion((int) $record['id'], $resource, $module);
+    }
+
+    /**
+     * 发布当前草稿.
+     */
+    public function publishDraft(string $resource, string $module = '', ?int $draftId = null, array $options = []): PublishResult
+    {
+        $record = null === $draftId ? $this->latestDraft($resource, $module) : $this->resolveVersionRecord($draftId, $resource, $module, 'draft');
+        if (null === $record) {
+            throw new \InvalidArgumentException('Latest schema draft does not exist.');
+        }
+
+        return $this->publishVersion((int) $record['id'], $resource, $module, $options);
     }
 
     /**
@@ -624,6 +929,600 @@ class SchemaPublisher
         }
 
         return $previous;
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    private function editableDraftRecord(string $resource, string $module, array $options = []): array
+    {
+        $draftId = isset($options['draft_id']) && is_numeric($options['draft_id']) ? (int) $options['draft_id'] : null;
+        if (null !== $draftId) {
+            return $this->resolveVersionRecord($draftId, $resource, $module, 'draft');
+        }
+
+        $draft = $this->latestDraft($resource, $module);
+        if (null !== $draft) {
+            return $draft;
+        }
+
+        $base = (string) ($options['base'] ?? 'latest_draft');
+        $current = 'empty' === $base ? null : $this->currentVersion($resource, $module);
+        $schema = null !== $current ? (array) ($current['schema'] ?? []) : [
+            'title' => $resource,
+            'name' => $resource,
+            'module' => '' !== $module ? $module : 'App',
+            'fields' => [],
+        ];
+
+        return $this->saveResourceDraft($resource, $schema, $module, [
+            'remark' => $options['remark'] ?? null,
+        ]);
+    }
+
+    /**
+     * 草稿级校验：允许空字段，但字段非空时仍复用完整编译校验。
+     *
+     * @param array<string, mixed> $schema
+     */
+    private function validateDraftSchema(array $schema): void
+    {
+        $resource = $schema['name'] ?? null;
+        if (!\is_string($resource) || !preg_match('/^[A-Za-z][A-Za-z0-9_]*$/', $resource)) {
+            throw new \InvalidArgumentException('Schema name is required and must use letters, numbers, and underscores.');
+        }
+
+        $fields = array_values(array_filter((array) ($schema['fields'] ?? []), 'is_array'));
+        if (0 === \count($fields)) {
+            return;
+        }
+
+        $schema['fields'] = $fields;
+        $this->compiler->compile($this->loader->load($schema, (string) ($schema['module'] ?? '')));
+    }
+
+    /**
+     * @param array<string, mixed> $schema
+     *
+     * @return array<string, mixed>
+     */
+    private function ensureDraftResource(string $resource, array $schema, string $module): array
+    {
+        $fields = array_values(array_filter((array) ($schema['fields'] ?? []), 'is_array'));
+        if (0 !== \count($fields)) {
+            $definition = $this->compiler->compile($this->loader->load($schema, $module));
+
+            return $this->catalog->ensureResource($resource, $definition->toArray(), $module);
+        }
+
+        return $this->catalog->ensureResource($resource, $schema, $module);
+    }
+
+    /**
+     * @param array<string, mixed> $field
+     */
+    private function fieldName(array $field): string
+    {
+        $name = $field['name'] ?? null;
+        if (!\is_string($name) || '' === trim($name)) {
+            throw new \InvalidArgumentException('Schema field name is invalid.');
+        }
+
+        return trim($name);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $fields
+     */
+    private function findFieldIndex(array $fields, string $name): ?int
+    {
+        foreach ($fields as $index => $field) {
+            if ((string) ($field['name'] ?? '') === $name) {
+                return $index;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<string, mixed> $schema
+     */
+    private function assertFieldNotReferenced(array $schema, string $field, string $operation = 'delete'): void
+    {
+        $references = $this->collectFieldReferences($schema, $field);
+        if (0 !== \count($references)) {
+            throw new SchemaFieldReferenceException($field, $operation, $references);
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $field
+     * @param array<int, array<string, mixed>> $currentFields
+     */
+    private function resolveRenameFrom(array $field, string $from, string $to, array $currentFields): ?string
+    {
+        $renameFrom = $field['rename_from'] ?? data_get($field, 'extends.rename_from');
+        if (\is_string($renameFrom) && '' !== trim($renameFrom)) {
+            $renameFrom = trim($renameFrom);
+
+            return $renameFrom === $to ? null : $renameFrom;
+        }
+
+        if (null !== $this->findFieldIndex($currentFields, $from)) {
+            return $from === $to ? null : $from;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<string, mixed> $schema
+     *
+     * @return array<string, mixed>
+     */
+    private function renameFieldReferences(array $schema, string $from, string $to): array
+    {
+        foreach (['title_field', 'cover_field'] as $key) {
+            if ((string) ($schema[$key] ?? '') === $from) {
+                $schema[$key] = $to;
+            }
+        }
+
+        foreach ((array) ($schema['search_fields'] ?? []) as $index => $name) {
+            if ((string) $name === $from) {
+                $schema['search_fields'][$index] = $to;
+            }
+        }
+
+        $order = (array) ($schema['order'] ?? []);
+        if (array_key_exists($from, $order)) {
+            $direction = $order[$from];
+            unset($order[$from]);
+            $order[$to] = $direction;
+        }
+        if (0 !== \count($order)) {
+            $schema['order'] = $order;
+        }
+
+        foreach ((array) data_get($schema, 'table.columns', []) as $index => $column) {
+            if ((string) $column === $from) {
+                data_set($schema, 'table.columns.'.$index, $to);
+            }
+        }
+
+        $schema['charts'] = $this->renameChartReferences((array) ($schema['charts'] ?? []), $from, $to);
+
+        foreach ((array) ($schema['fields'] ?? []) as $index => $candidate) {
+            if (!\is_array($candidate)) {
+                continue;
+            }
+
+            if ((string) data_get($candidate, 'relation.local_key', '') === $from) {
+                data_set($schema, 'fields.'.$index.'.relation.local_key', $to);
+            }
+        }
+
+        return $schema;
+    }
+
+    /**
+     * @param array<int, mixed> $charts
+     *
+     * @return array<int, mixed>
+     */
+    private function renameChartReferences(array $charts, string $from, string $to): array
+    {
+        foreach ($charts as $chartIndex => $chart) {
+            if (!\is_array($chart)) {
+                continue;
+            }
+
+            foreach ((array) ($chart['groups'] ?? []) as $index => $group) {
+                if ((string) $group === $from) {
+                    $charts[$chartIndex]['groups'][$index] = $to;
+                }
+            }
+            if ((string) ($chart['group_by'] ?? '') === $from) {
+                $charts[$chartIndex]['group_by'] = $to;
+            }
+            foreach ((array) ($chart['metrics'] ?? []) as $index => $metric) {
+                if (!\is_array($metric)) {
+                    continue;
+                }
+                if ((string) ($metric['field'] ?? '') === $from) {
+                    $charts[$chartIndex]['metrics'][$index]['field'] = $to;
+                }
+            }
+            foreach ((array) data_get($chart, 'query.groups', []) as $index => $group) {
+                if ((string) $group === $from) {
+                    data_set($charts, $chartIndex.'.query.groups.'.$index, $to);
+                }
+            }
+            foreach ((array) data_get($chart, 'query.metrics', []) as $index => $metric) {
+                if (!\is_array($metric)) {
+                    continue;
+                }
+                if ((string) ($metric['field'] ?? '') === $from) {
+                    data_set($charts, $chartIndex.'.query.metrics.'.$index.'.field', $to);
+                }
+            }
+            foreach ((array) data_get($chart, 'query.filters', []) as $index => $filter) {
+                if (!\is_array($filter)) {
+                    continue;
+                }
+                if ((string) ($filter['field'] ?? '') === $from) {
+                    data_set($charts, $chartIndex.'.query.filters.'.$index.'.field', $to);
+                }
+            }
+            foreach ((array) data_get($chart, 'query.sorts', []) as $index => $sort) {
+                if (!\is_array($sort)) {
+                    continue;
+                }
+                if ((string) ($sort['field'] ?? '') === $from) {
+                    data_set($charts, $chartIndex.'.query.sorts.'.$index.'.field', $to);
+                }
+            }
+        }
+
+        return $charts;
+    }
+
+    /**
+     * @param array<string, mixed> $schema
+     *
+     * @return array<string, mixed>
+     */
+    private function renameFieldInLayout(array $schema, string $from, string $to): array
+    {
+        $nodes = data_get($schema, 'layout.nodes');
+        if (!\is_array($nodes)) {
+            return $schema;
+        }
+
+        data_set($schema, 'layout.nodes', $this->mutateLayoutNodes($nodes, static function (array $node) use ($from, $to): ?array {
+            if ((string) ($node['name'] ?? '') === $from) {
+                $node['name'] = $to;
+            }
+
+            return $node;
+        }));
+
+        return $schema;
+    }
+
+    /**
+     * @param array<string, mixed> $schema
+     *
+     * @return array<string, mixed>
+     */
+    private function removeFieldFromLayout(array $schema, string $field): array
+    {
+        $nodes = data_get($schema, 'layout.nodes');
+        if (!\is_array($nodes)) {
+            return $schema;
+        }
+
+        data_set($schema, 'layout.nodes', $this->mutateLayoutNodes($nodes, static function (array $node) use ($field): ?array {
+            if ((string) ($node['name'] ?? '') === $field) {
+                return null;
+            }
+
+            return $node;
+        }));
+
+        return $schema;
+    }
+
+    /**
+     * @param array<string, mixed> $schema
+     *
+     * @return array<string, mixed>
+     */
+    private function cleanupFieldReferences(array $schema, string $field): array
+    {
+        foreach (['title_field', 'cover_field'] as $key) {
+            if ((string) ($schema[$key] ?? '') === $field) {
+                unset($schema[$key]);
+            }
+        }
+
+        $searchFields = array_values(array_filter((array) ($schema['search_fields'] ?? []), static function ($name) use ($field): bool {
+            return (string) $name !== $field;
+        }));
+        if (0 !== \count($searchFields)) {
+            $schema['search_fields'] = $searchFields;
+        } else {
+            unset($schema['search_fields']);
+        }
+
+        $order = (array) ($schema['order'] ?? []);
+        if (array_key_exists($field, $order)) {
+            unset($order[$field]);
+        }
+        if (0 !== \count($order)) {
+            $schema['order'] = $order;
+        } else {
+            unset($schema['order']);
+        }
+
+        $tableColumns = array_values(array_filter((array) data_get($schema, 'table.columns', []), static function ($column) use ($field): bool {
+            return (string) $column !== $field;
+        }));
+        if (0 !== \count($tableColumns)) {
+            data_set($schema, 'table.columns', $tableColumns);
+        } else {
+            if (\is_array(data_get($schema, 'table', null))) {
+                Arr::forget($schema, 'table.columns');
+            }
+        }
+
+        $schema['charts'] = $this->cleanupChartReferences((array) ($schema['charts'] ?? []), $field);
+        if (0 === \count((array) $schema['charts'])) {
+            unset($schema['charts']);
+        }
+
+        foreach ((array) ($schema['fields'] ?? []) as $index => $candidate) {
+            if (!\is_array($candidate)) {
+                continue;
+            }
+            if ((string) data_get($candidate, 'relation.local_key', '') === $field) {
+                Arr::forget($schema, 'fields.'.$index.'.relation.local_key');
+            }
+            if ((string) data_get($candidate, 'extends.local_key', '') === $field) {
+                Arr::forget($schema, 'fields.'.$index.'.extends.local_key');
+            }
+        }
+
+        return $schema;
+    }
+
+    /**
+     * @param array<int, mixed> $charts
+     *
+     * @return array<int, mixed>
+     */
+    private function cleanupChartReferences(array $charts, string $field): array
+    {
+        foreach ($charts as $chartIndex => $chart) {
+            if (!\is_array($chart)) {
+                continue;
+            }
+
+            $groups = array_values(array_filter((array) ($chart['groups'] ?? []), static function ($group) use ($field): bool {
+                return (string) $group !== $field;
+            }));
+            if (0 !== \count($groups)) {
+                $charts[$chartIndex]['groups'] = $groups;
+            } else {
+                unset($charts[$chartIndex]['groups']);
+            }
+
+            if ((string) ($chart['group_by'] ?? '') === $field) {
+                unset($charts[$chartIndex]['group_by']);
+            }
+
+            $metrics = [];
+            foreach ((array) ($chart['metrics'] ?? []) as $metric) {
+                if (!\is_array($metric) || (string) ($metric['field'] ?? '') !== $field) {
+                    $metrics[] = $metric;
+                }
+            }
+            if (0 !== \count($metrics)) {
+                $charts[$chartIndex]['metrics'] = array_values($metrics);
+            } else {
+                unset($charts[$chartIndex]['metrics']);
+            }
+
+            $queryGroups = array_values(array_filter((array) data_get($chart, 'query.groups', []), static function ($group) use ($field): bool {
+                return (string) $group !== $field;
+            }));
+            if (0 !== \count($queryGroups)) {
+                data_set($charts, $chartIndex.'.query.groups', $queryGroups);
+            } else {
+                Arr::forget($charts, $chartIndex.'.query.groups');
+            }
+
+            if ((string) data_get($chart, 'query.group_by', '') === $field) {
+                Arr::forget($charts, $chartIndex.'.query.group_by');
+            }
+
+            $queryMetrics = [];
+            foreach ((array) data_get($chart, 'query.metrics', []) as $metric) {
+                if (!\is_array($metric) || (string) ($metric['field'] ?? '') !== $field) {
+                    $queryMetrics[] = $metric;
+                }
+            }
+            if (0 !== \count($queryMetrics)) {
+                data_set($charts, $chartIndex.'.query.metrics', array_values($queryMetrics));
+            } else {
+                Arr::forget($charts, $chartIndex.'.query.metrics');
+            }
+
+            $queryAggregates = [];
+            foreach ((array) data_get($chart, 'query.aggregates', []) as $metric) {
+                if (!\is_array($metric) || (string) ($metric['field'] ?? '') !== $field) {
+                    $queryAggregates[] = $metric;
+                }
+            }
+            if (0 !== \count($queryAggregates)) {
+                data_set($charts, $chartIndex.'.query.aggregates', array_values($queryAggregates));
+            } else {
+                Arr::forget($charts, $chartIndex.'.query.aggregates');
+            }
+
+            $queryFilters = [];
+            foreach ((array) data_get($chart, 'query.filters', []) as $filter) {
+                if (!\is_array($filter) || (string) ($filter['field'] ?? '') !== $field) {
+                    $queryFilters[] = $filter;
+                }
+            }
+            if (0 !== \count($queryFilters)) {
+                data_set($charts, $chartIndex.'.query.filters', array_values($queryFilters));
+            } else {
+                Arr::forget($charts, $chartIndex.'.query.filters');
+            }
+
+            $querySorts = [];
+            foreach ((array) data_get($chart, 'query.sorts', []) as $sort) {
+                if (!\is_array($sort) || (string) ($sort['field'] ?? '') !== $field) {
+                    $querySorts[] = $sort;
+                }
+            }
+            if (0 !== \count($querySorts)) {
+                data_set($charts, $chartIndex.'.query.sorts', array_values($querySorts));
+            } else {
+                Arr::forget($charts, $chartIndex.'.query.sorts');
+            }
+        }
+
+        return array_values($charts);
+    }
+
+    /**
+     * @param array<int, mixed> $nodes
+     * @param callable(array<string, mixed>): ?array<string, mixed> $mutator
+     *
+     * @return array<int, mixed>
+     */
+    private function mutateLayoutNodes(array $nodes, callable $mutator): array
+    {
+        $result = [];
+        foreach ($nodes as $node) {
+            if (!\is_array($node)) {
+                $result[] = $node;
+
+                continue;
+            }
+
+            foreach (self::LAYOUT_CHILD_KEYS as $key) {
+                if (!isset($node[$key]) || !\is_array($node[$key])) {
+                    continue;
+                }
+                $node[$key] = $this->mutateLayoutNodes($node[$key], $mutator);
+            }
+
+            $mutated = $mutator($node);
+            if (null !== $mutated) {
+                $result[] = $mutated;
+            }
+        }
+
+        return array_values($result);
+    }
+
+    /**
+     * @param array<string, mixed> $schema
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function collectFieldReferences(array $schema, string $field): array
+    {
+        $references = [];
+
+        foreach (['title_field', 'cover_field'] as $key) {
+            if ((string) ($schema[$key] ?? '') === $field) {
+                $references[] = [
+                    'type' => $key,
+                    'path' => $key,
+                ];
+            }
+        }
+
+        foreach ((array) ($schema['search_fields'] ?? []) as $index => $name) {
+            if ((string) $name === $field) {
+                $references[] = [
+                    'type' => 'search_fields',
+                    'path' => 'search_fields.'.$index,
+                ];
+            }
+        }
+
+        foreach (array_keys((array) ($schema['order'] ?? [])) as $name) {
+            if ((string) $name === $field) {
+                $references[] = [
+                    'type' => 'order',
+                    'path' => 'order.'.$name,
+                ];
+            }
+        }
+
+        foreach ((array) data_get($schema, 'table.columns', []) as $index => $name) {
+            if ((string) $name === $field) {
+                $references[] = [
+                    'type' => 'table.columns',
+                    'path' => 'table.columns.'.$index,
+                ];
+            }
+        }
+
+        foreach ((array) ($schema['charts'] ?? []) as $chartIndex => $chart) {
+            if (!\is_array($chart)) {
+                continue;
+            }
+            foreach ((array) ($chart['groups'] ?? []) as $index => $group) {
+                if ((string) $group === $field) {
+                    $references[] = [
+                        'type' => 'charts.groups',
+                        'path' => 'charts.'.$chartIndex.'.groups.'.$index,
+                    ];
+                }
+            }
+            if ((string) ($chart['group_by'] ?? '') === $field) {
+                $references[] = [
+                    'type' => 'charts.group_by',
+                    'path' => 'charts.'.$chartIndex.'.group_by',
+                ];
+            }
+            foreach ((array) data_get($chart, 'query.groups', []) as $index => $group) {
+                if ((string) $group === $field) {
+                    $references[] = [
+                        'type' => 'charts.query.groups',
+                        'path' => 'charts.'.$chartIndex.'.query.groups.'.$index,
+                    ];
+                }
+            }
+            foreach ((array) data_get($chart, 'query.metrics', []) as $index => $metric) {
+                if (\is_array($metric) && (string) ($metric['field'] ?? '') === $field) {
+                    $references[] = [
+                        'type' => 'charts.query.metrics',
+                        'path' => 'charts.'.$chartIndex.'.query.metrics.'.$index.'.field',
+                    ];
+                }
+            }
+            foreach ((array) data_get($chart, 'query.filters', []) as $index => $filter) {
+                if (\is_array($filter) && (string) ($filter['field'] ?? '') === $field) {
+                    $references[] = [
+                        'type' => 'charts.query.filters',
+                        'path' => 'charts.'.$chartIndex.'.query.filters.'.$index.'.field',
+                    ];
+                }
+            }
+            foreach ((array) data_get($chart, 'query.sorts', []) as $index => $sort) {
+                if (\is_array($sort) && (string) ($sort['field'] ?? '') === $field) {
+                    $references[] = [
+                        'type' => 'charts.query.sorts',
+                        'path' => 'charts.'.$chartIndex.'.query.sorts.'.$index.'.field',
+                    ];
+                }
+            }
+        }
+
+        foreach ((array) ($schema['fields'] ?? []) as $index => $candidate) {
+            if (!\is_array($candidate)) {
+                continue;
+            }
+            if ((string) data_get($candidate, 'relation.local_key', '') === $field) {
+                $references[] = [
+                    'type' => 'relation.local_key',
+                    'path' => 'fields.'.$index.'.relation.local_key',
+                ];
+            }
+        }
+
+        return $references;
     }
 
     /**

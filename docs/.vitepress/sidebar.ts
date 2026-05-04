@@ -10,6 +10,10 @@ export function getSideBarGuide() {
             collapsible: true,
             items: [
                 { text: 'Schema 生命周期', link: '/guide/schema-lifecycle.md' },
+                { text: '模型目录管理', link: '/guide/resource-management.md' },
+                { text: '字段草稿维护', link: '/guide/field-draft.md' },
+                { text: '接口契约', link: '/guide/resource-field-contract.md' },
+                { text: '前端联调建议', link: '/guide/frontend-integration.md' },
                 { text: '关联使用', link: '/guide/relation.md' },
             ],
         },
