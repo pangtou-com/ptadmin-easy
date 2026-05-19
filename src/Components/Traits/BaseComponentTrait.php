@@ -221,25 +221,25 @@ trait BaseComponentTrait
     }
 
     /**
-     * 图片字段始终使用数组值语义。
+     * 图片字段按 limit 与完整对象开关决定返回值语义。
      *
      * @param mixed $val
      *
-     * @return array<int, mixed>
+     * @return mixed
      */
-    protected function getImageAttribute($val): array
+    protected function getImageAttribute($val)
     {
-        return $this->normalizeAssetFieldValue($val, false);
+        return $this->normalizeAssetValue($val, false);
     }
 
     /**
-     * 附件字段始终使用数组值语义。
+     * 附件字段按 limit 与完整对象开关决定返回值语义。
      *
      * @param mixed $val
      *
-     * @return array<int, mixed>
+     * @return mixed
      */
-    protected function getAttachmentAttribute($val): array
+    protected function getAttachmentAttribute($val)
     {
         return $this->getImageAttribute($val);
     }
@@ -253,7 +253,12 @@ trait BaseComponentTrait
             return null;
         }
 
-        return json_encode($this->normalizeAssetFieldValue($val, true), JSON_UNESCAPED_UNICODE);
+        $value = $this->normalizeAssetValue($val, true);
+        if (\is_string($value)) {
+            return $value;
+        }
+
+        return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     /**
@@ -267,33 +272,118 @@ trait BaseComponentTrait
     /**
      * 统一资源字段值结构。
      *
-     * 写入时严格要求 `IAsset[]`；读取时仅返回合法的轻量快照数组。
+     * 默认返回 string 或 string[]；当开启完整对象存储时返回对象数组。
      *
      * @param mixed $value
      *
-     * @return array<int, array{id:int, url:string, title:string, type:string}>
+     * @return mixed
      */
-    private function normalizeAssetFieldValue($value, bool $strict): array
+    private function normalizeAssetValue($value, bool $strict)
     {
         if (null === $value || '' === $value) {
+            return $this->shouldStoreFullAssetObject() ? [] : ($this->assetLimit() > 1 ? [] : null);
+        }
+
+        $items = $this->normalizeAssetItems($value, $strict);
+        if ($this->shouldStoreFullAssetObject()) {
+            return 1 === $this->assetLimit() ? ($items[0] ?? null) : $items;
+        }
+
+        $urls = array_values(array_filter(array_map(static function (array $asset): string {
+            return (string) ($asset['url'] ?? '');
+        }, $items), static function (string $url): bool {
+            return '' !== trim($url);
+        }));
+
+        return 1 === $this->assetLimit() ? ($urls[0] ?? null) : $urls;
+    }
+
+    /**
+     * @param mixed $item
+     *
+     * @return array<string, mixed>|null
+     */
+    private function normalizeAssetItem($item, int $index, bool $strict): ?array
+    {
+        if (null === $item || '' === $item) {
+            return null;
+        }
+
+        if (is_scalar($item)) {
+            $url = trim((string) $item);
+            if ('' === $url) {
+                if ($strict) {
+                    throw new EasyValidateException('字段['.$this->getName().']第'.($index + 1).'项缺少有效的[url]。');
+                }
+
+                return null;
+            }
+
+            return ['url' => $url];
+        }
+
+        if (!\is_array($item)) {
+            if ($strict) {
+                throw new EasyValidateException('字段['.$this->getName().']第'.($index + 1).'项必须是对象。');
+            }
+
+            return null;
+        }
+
+        $url = $item['url'] ?? ($item['path'] ?? ($item['preview'] ?? ($item['src'] ?? null)));
+        if (!\is_string($url) || '' === trim($url)) {
+            if ($strict) {
+                throw new EasyValidateException('字段['.$this->getName().']第'.($index + 1).'项缺少有效的[url]。');
+            }
+
+            return null;
+        }
+
+        $normalized = ['url' => trim($url)];
+        if (isset($item['id']) && \is_numeric($item['id']) && (int) $item['id'] > 0) {
+            $normalized['id'] = (int) $item['id'];
+        }
+
+        foreach (['title', 'type'] as $key) {
+            $value = $item[$key] ?? null;
+            if (\is_string($value) && '' !== trim($value)) {
+                $normalized[$key] = trim($value);
+            }
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function normalizeAssetItems($value, bool $strict): array
+    {
+        if (\is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (\is_array($decoded)) {
+                $value = $decoded;
+            } elseif ('' !== trim($value)) {
+                $value = [$value];
+            } else {
+                return [];
+            }
+        }
+
+        if (!\is_array($value)) {
+            if ($strict) {
+                throw new EasyValidateException('字段['.$this->getName().']的资源值格式不合法。');
+            }
+
             return [];
         }
 
-        $items = $value;
-        if (!\is_array($items)) {
-            if ($strict) {
-                throw new EasyValidateException('字段['.$this->getName().']必须传入 IAsset[]。');
-            }
-
-            $items = json_decode((string) $value, true);
-        }
-
-        if (!\is_array($items) || !array_is_list($items)) {
-            if ($strict) {
-                throw new EasyValidateException('字段['.$this->getName().']必须传入 IAsset[]。');
-            }
-
-            return [];
+        if (array_is_list($value)) {
+            $items = $value;
+        } else {
+            $items = [$value];
         }
 
         $normalized = [];
@@ -304,56 +394,33 @@ trait BaseComponentTrait
                 continue;
             }
 
-            if (isset($seen[$asset['id']])) {
+            $key = (string) ($asset['url'] ?? '');
+            if ('' === $key || isset($seen[$key])) {
                 continue;
             }
 
-            $seen[$asset['id']] = true;
+            $seen[$key] = true;
             $normalized[] = $asset;
         }
 
-        return array_values($normalized);
+        return $normalized;
     }
 
-    /**
-     * @param mixed $item
-     *
-     * @return array{id:int, url:string, title:string, type:string}|null
-     */
-    private function normalizeAssetItem($item, int $index, bool $strict): ?array
+    private function assetLimit(): int
     {
-        if (!\is_array($item)) {
-            if ($strict) {
-                throw new EasyValidateException('字段['.$this->getName().']第'.($index + 1).'项必须是对象。');
-            }
-
-            return null;
+        $limit = $this->getMetadata('limit', $this->getMetadata('extends.limit', 1));
+        if (!\is_numeric($limit) || (int) $limit <= 0) {
+            return 1;
         }
 
-        $id = $item['id'] ?? null;
-        if (!\is_numeric($id) || (int) $id <= 0) {
-            if ($strict) {
-                throw new EasyValidateException('字段['.$this->getName().']第'.($index + 1).'项缺少有效的[id]。');
-            }
+        return (int) $limit;
+    }
 
-            return null;
-        }
-
-        $normalized = ['id' => (int) $id];
-        foreach (['url', 'title', 'type'] as $key) {
-            $value = $item[$key] ?? null;
-            if (!\is_string($value) || '' === trim($value)) {
-                if ($strict) {
-                    throw new EasyValidateException('字段['.$this->getName().']第'.($index + 1).'项缺少有效的['.$key.']。');
-                }
-
-                return null;
-            }
-
-            $normalized[$key] = trim($value);
-        }
-
-        return $normalized;
+    private function shouldStoreFullAssetObject(): bool
+    {
+        return true === (bool) $this->getMetadata('enableAlt', false)
+            || true === (bool) $this->getMetadata('store_full_object', false)
+            || true === (bool) $this->getMetadata('storeFullObject', false);
     }
 
     /**

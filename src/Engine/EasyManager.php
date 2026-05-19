@@ -35,6 +35,7 @@ use PTAdmin\Easy\Core\Support\FieldTypeRegistry;
 use PTAdmin\Easy\Engine\Model\Document;
 use PTAdmin\Easy\Engine\Resource\ResourceNameParser;
 use PTAdmin\Easy\Engine\Schema\Schema;
+use PTAdmin\Easy\Handle\FieldHandle;
 use PTAdmin\Easy\Exceptions\EasyException;
 use PTAdmin\Easy\Handle\ChartHandle;
 use PTAdmin\Easy\Handle\DocHandle;
@@ -200,6 +201,16 @@ final class EasyManager implements IEasyManager
     public function component(): Component
     {
         return new Component();
+    }
+
+    /**
+     * 单字段处理入口，不关联资源生命周期。
+     *
+     * @param array<string, mixed> $schema
+     */
+    public function field(array $schema): FieldHandle
+    {
+        return new FieldHandle($schema);
     }
 
     /**

@@ -23,6 +23,7 @@ use PTAdmin\Easy\Engine\Model\Document;
 use PTAdmin\Easy\Engine\Schema\Schema;
 use PTAdmin\Easy\Handle\ChartHandle;
 use PTAdmin\Easy\Handle\DocHandle;
+use PTAdmin\Easy\Handle\FieldHandle;
 use PTAdmin\Easy\Handle\ReleaseHandle;
 use PTAdmin\Easy\Handle\ResourceCatalogHandle;
 use PTAdmin\Easy\Handle\SchemaHandle;
@@ -35,6 +36,7 @@ use PTAdmin\Easy\Handle\SchemaHandle;
  * @method static Schema table($resource, string $module = "")                    数据表处理对象，用于新增表结构，更新表结构，删除表结构等
  * @method static bool hasResource(string $resource)                              资源是否存在
  * @method static Component component()                                       组件管理器
+ * @method static FieldHandle field(array $schema)                            单字段处理句柄
  * @method static mixed hooks()                                               事件处理钩子对象
  * @method static mixed scopes()                                              数据范围管理器
  * @method static Document document(string $resource, string $module = '')    文档模型

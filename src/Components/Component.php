@@ -78,6 +78,7 @@ class Component
         'block' => ['class' => BlockComponent::class, 'label' => '功能块', 'is_virtual' => true, 'group' => 'func'],
         'link' => ['class' => LinkComponent::class, 'label' => '链接表', 'group' => 'func', 'append' => true, 'relation' => true],
         'json' => ['class' => JsonComponent::class, 'label' => 'Json', 'group' => 'func'],
+        'key-value' => ['class' => JsonComponent::class, 'label' => '键值对', 'group' => 'func'],
         'table' => ['class' => JsonComponent::class, 'label' => '表格', 'is_virtual' => true, 'group' => 'func', 'relation' => true],
         'mirror' => ['class' => JsonComponent::class, 'label' => '镜像数据', 'is_virtual' => true, 'group' => 'func'],
         'clone' => ['class' => JsonComponent::class, 'label' => '克隆数据', 'group' => 'func'],
