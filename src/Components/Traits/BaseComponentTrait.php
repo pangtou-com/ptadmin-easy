@@ -253,12 +253,23 @@ trait BaseComponentTrait
             return null;
         }
 
-        $value = $this->normalizeAssetValue($val, true);
-        if (\is_string($value)) {
-            return $value;
+        $items = $this->normalizeAssetItems($val, true);
+        if ($this->shouldStoreFullAssetObject()) {
+            return json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         }
 
-        return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $urls = array_values(array_filter(array_map(static function (array $asset): string {
+            return (string) ($asset['url'] ?? '');
+        }, $items), static function (string $url): bool {
+            return '' !== trim($url);
+        }));
+
+        $payload = 1 === $this->assetLimit() ? ($urls[0] ?? null) : $urls;
+        if (null === $payload) {
+            return null;
+        }
+
+        return json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     /**
@@ -281,12 +292,12 @@ trait BaseComponentTrait
     private function normalizeAssetValue($value, bool $strict)
     {
         if (null === $value || '' === $value) {
-            return $this->shouldStoreFullAssetObject() ? [] : ($this->assetLimit() > 1 ? [] : null);
+            return $this->shouldStoreFullAssetObject() || $this->assetLimit() > 1 ? [] : null;
         }
 
         $items = $this->normalizeAssetItems($value, $strict);
         if ($this->shouldStoreFullAssetObject()) {
-            return 1 === $this->assetLimit() ? ($items[0] ?? null) : $items;
+            return $items;
         }
 
         $urls = array_values(array_filter(array_map(static function (array $asset): string {
@@ -339,10 +350,10 @@ trait BaseComponentTrait
             return null;
         }
 
-        $normalized = ['url' => trim($url)];
         if (isset($item['id']) && \is_numeric($item['id']) && (int) $item['id'] > 0) {
             $normalized['id'] = (int) $item['id'];
         }
+        $normalized['url'] = trim($url);
 
         foreach (['title', 'type'] as $key) {
             $value = $item[$key] ?? null;
@@ -365,6 +376,8 @@ trait BaseComponentTrait
             $decoded = json_decode($value, true);
             if (\is_array($decoded)) {
                 $value = $decoded;
+            } elseif (JSON_ERROR_NONE === json_last_error()) {
+                $value = [$decoded];
             } elseif ('' !== trim($value)) {
                 $value = [$value];
             } else {

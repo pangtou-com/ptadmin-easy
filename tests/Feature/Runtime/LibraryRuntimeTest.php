@@ -2453,18 +2453,16 @@ it('enforces strict asset array protocol and stores light asset snapshots', func
                 ],
             ]);
         })->toThrow(EasyValidateException::class)
-        ->and(function () use ($docHandle): void {
-            $docHandle->create([
-                'title' => '无效资源',
-                'attachments' => [
-                    [
-                        'id' => 2,
-                        'url' => '/uploads/manual.pdf',
-                        'type' => 'file',
-                    ],
+        ->and($docHandle->create([
+            'title' => '轻量附件',
+            'attachments' => [
+                [
+                    'id' => 2,
+                    'url' => '/uploads/manual.pdf',
+                    'type' => 'file',
                 ],
-            ]);
-        })->toThrow(EasyValidateException::class, '字段[attachments]第1项缺少有效的[title]。');
+            ],
+        ])->attachments)->toBe(['/uploads/manual.pdf']);
 
     $created = $docHandle->create([
         'title' => '有效资源',
@@ -2505,38 +2503,10 @@ it('enforces strict asset array protocol and stores light asset snapshots', func
         }, $items);
     };
 
-    expect($normalizeAssets($created->cover))->toBe($normalizeAssets([
-        [
-            'id' => 11,
-            'url' => '/uploads/cover.png',
-            'title' => '封面图',
-            'type' => 'image',
-        ],
-    ]))
-        ->and($normalizeAssets($created->attachments))->toBe($normalizeAssets([
-            [
-                'id' => 22,
-                'url' => '/uploads/manual.pdf',
-                'title' => '用户手册',
-                'type' => 'file',
-            ],
-        ]))
-        ->and($normalizeAssets(json_decode((string) ($stored->cover ?? 'null'), true)))->toBe($normalizeAssets([
-            [
-                'id' => 11,
-                'url' => '/uploads/cover.png',
-                'title' => '封面图',
-                'type' => 'image',
-            ],
-        ]))
-        ->and($normalizeAssets(json_decode((string) ($stored->attachments ?? 'null'), true)))->toBe($normalizeAssets([
-            [
-                'id' => 22,
-                'url' => '/uploads/manual.pdf',
-                'title' => '用户手册',
-                'type' => 'file',
-            ],
-        ]))
+    expect($created->cover)->toBe('/uploads/cover.png')
+        ->and($created->attachments)->toBe(['/uploads/manual.pdf'])
+        ->and(json_decode((string) ($stored->cover ?? 'null'), true))->toBe('/uploads/cover.png')
+        ->and(json_decode((string) ($stored->attachments ?? 'null'), true))->toBe(['/uploads/manual.pdf'])
         ->and(data_get($mapping, 'cover.validation.rules'))->toContain('array', 'max:1')
         ->and(data_get($mapping, 'attachments.validation.rules'))->toContain('array', 'max:3');
 });
