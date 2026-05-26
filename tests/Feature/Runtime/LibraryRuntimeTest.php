@@ -117,6 +117,130 @@ it('exposes split doc schema release and table handles', function (): void {
         ->and(Easy::doc($table)->detail($created->id)->title)->toBe('split api');
 });
 
+it('can skip create and update validation through execution context', function (): void {
+    $table = easyRuntimeTable('skip_validation');
+    $schema = easyRuntimeSchema($table);
+    $handle = Easy::doc($schema);
+    $context = (new ExecutionContext())->withoutValidation();
+
+    Easy::release($schema)->publish($schema);
+
+    expect(function () use ($handle): void {
+        $handle->create([
+            'title' => '租户超限',
+            'tenant_id' => 1000000,
+            'status' => 1,
+        ]);
+    })->toThrow(EasyValidateException::class);
+
+    $created = $handle->create([
+        'title' => '租户超限',
+        'tenant_id' => 1000000,
+        'status' => 1,
+    ], $context);
+
+    expect($created)->not->toBeNull()
+        ->and((int) $created->tenant_id)->toBe(1000000);
+
+    expect(function () use ($handle, $created): void {
+        $handle->update($created->id, [
+            'tenant_id' => 1000001,
+        ]);
+    })->toThrow(EasyValidateException::class);
+
+    $updated = $handle->update($created->id, [
+        'tenant_id' => 1000001,
+    ], new ExecutionContext(['skip_validation' => true]));
+
+    expect($updated)->not->toBeNull()
+        ->and((int) $updated->tenant_id)->toBe(1000001);
+});
+
+it('allows nullable values for optional fields with derived validation rules', function (): void {
+    $table = easyRuntimeTable('nullable_optional');
+    $schema = [
+        'title' => '可空字段',
+        'name' => $table,
+        'module' => 'cms',
+        'fields' => [
+            [
+                'name' => 'title',
+                'type' => 'text',
+                'label' => '标题',
+                'required' => true,
+                'maxlength' => 100,
+            ],
+            [
+                'name' => 'weight',
+                'type' => 'number',
+                'label' => '权重',
+                'max' => 10,
+            ],
+            [
+                'name' => 'cover',
+                'type' => 'image',
+                'label' => '封面',
+                'limit' => 1,
+            ],
+        ],
+    ];
+    $handle = Easy::doc($schema);
+
+    Easy::release($schema)->publish($schema);
+
+    $created = $handle->create([
+        'title' => '允许空值',
+        'weight' => null,
+        'cover' => null,
+    ]);
+
+    expect($created)->not->toBeNull()
+        ->and($created->weight)->toBeNull()
+        ->and($created->cover)->toBeNull();
+});
+
+it('can build frontend blueprint without inferred validation rules', function (): void {
+    $table = easyRuntimeTable('blueprint_rules');
+    $schema = [
+        'title' => '前端规则',
+        'name' => $table,
+        'module' => 'cms',
+        'fields' => [
+            [
+                'name' => 'title',
+                'type' => 'text',
+                'label' => '标题',
+                'rules' => ['required'],
+                'maxlength' => 100,
+            ],
+            [
+                'name' => 'weight',
+                'type' => 'number',
+                'label' => '权重',
+                'min' => 0,
+                'max' => 10,
+            ],
+            [
+                'name' => 'cover',
+                'type' => 'image',
+                'label' => '封面',
+                'limit' => 1,
+            ],
+        ],
+    ];
+    $schemaHandle = Easy::schema($schema);
+
+    $defaultBlueprint = $schemaHandle->blueprint();
+    $frontendBlueprint = $schemaHandle->blueprint(['infer_rules' => false]);
+
+    expect(data_get($defaultBlueprint, 'fields.0.rules'))->toContain('required', 'max:100')
+        ->and(data_get($defaultBlueprint, 'fields.1.rules'))->toContain('nullable', 'numeric', 'min:0', 'max:10')
+        ->and(data_get($defaultBlueprint, 'fields.2.rules'))->toContain('nullable', 'array', 'max:1')
+        ->and(data_get($frontendBlueprint, 'fields.0.rules'))->toBe(['required'])
+        ->and(data_get($frontendBlueprint, 'fields.1.rules'))->toBe([])
+        ->and(data_get($frontendBlueprint, 'fields.2.rules'))->toBe([]);
+});
+
 it('enforces schema permissions during runtime execution', function (): void {
     $table = easyRuntimeTable('permission');
     $schema = easyRuntimeSchema($table, [

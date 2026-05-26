@@ -25,7 +25,12 @@ class CreateAction implements ActionInterface
     public function execute(SchemaDefinition $definition, array $payload = [], ?ExecutionContext $context = null)
     {
         return DB::transaction(function () use ($definition, $payload, $context) {
-            return $definition->document()->useContext($context)->store($payload);
+            $document = $definition->document()->useContext($context);
+            if (null !== $context && !$context->shouldValidate()) {
+                $document->setValidate(false);
+            }
+
+            return $document->store($payload);
         });
     }
 }

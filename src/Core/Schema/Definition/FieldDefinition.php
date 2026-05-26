@@ -433,6 +433,11 @@ final class FieldDefinition
         return $this->field->getRules($id);
     }
 
+    public function explicitRules(): array
+    {
+        return array_values((array) $this->field->getMetadata('rules', []));
+    }
+
     /**
      * 返回底层原始字段对象.
      */
@@ -460,8 +465,11 @@ final class FieldDefinition
     /**
      * 导出字段定义.
      */
-    public function toArray(): array
+    public function toArray(array $options = []): array
     {
+        $includeInferredRules = !array_key_exists('infer_rules', $options) || true === (bool) $options['infer_rules'];
+        $rules = $includeInferredRules ? $this->rules() : $this->explicitRules();
+
         return array_filter([
             'name' => $this->name(),
             'type' => $this->type(),
@@ -485,7 +493,7 @@ final class FieldDefinition
             'secret' => $this->secret() ? true : null,
             'mask' => $this->maskConfig(),
             'options' => $this->options(),
-            'rules' => $this->rules(),
+            'rules' => $rules,
             'relation' => $this->relation(),
         ] + $this->switchProps() + $this->uploadProps(), static function ($value): bool {
             return null !== $value;

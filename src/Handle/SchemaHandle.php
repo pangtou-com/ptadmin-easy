@@ -35,9 +35,9 @@ final class SchemaHandle
      *
      * @return array<string, mixed>
      */
-    public function blueprint(): array
+    public function blueprint(array $options = []): array
     {
-        return $this->handle->blueprint();
+        return $this->handle->blueprint($options);
     }
 
     /**

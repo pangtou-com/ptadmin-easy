@@ -8,6 +8,7 @@ final class ExecutionContext
 {
     private const SENSITIVE_FIELDS_KEY = 'runtime.sensitive.allowed_fields';
     private const SENSITIVE_ALL_KEY = 'runtime.sensitive.allow_all';
+    private const SKIP_VALIDATION_KEY = 'runtime.validation.skip';
 
     /** @var array */
     private $attributes;
@@ -71,6 +72,30 @@ final class ExecutionContext
         $this->attributes[self::SENSITIVE_ALL_KEY] = true;
 
         return $this;
+    }
+
+    public function withoutValidation(): self
+    {
+        $this->attributes[self::SKIP_VALIDATION_KEY] = true;
+
+        return $this;
+    }
+
+    public function withValidation(): self
+    {
+        $this->attributes[self::SKIP_VALIDATION_KEY] = false;
+
+        return $this;
+    }
+
+    public function shouldValidate(): bool
+    {
+        return !(
+            true === (bool) ($this->attributes[self::SKIP_VALIDATION_KEY] ?? false)
+            || true === (bool) ($this->attributes['skip_validation'] ?? false)
+            || true === (bool) ($this->attributes['bypass_validation'] ?? false)
+            || true === (bool) ($this->attributes['without_validation'] ?? false)
+        );
     }
 
     public function canAccessSensitive(string $field): bool

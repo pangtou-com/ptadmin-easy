@@ -192,9 +192,9 @@ class ResourceHandle
      *
      * @return array<string, mixed>
      */
-    public function blueprint(): array
+    public function blueprint(array $options = []): array
     {
-        return $this->schema()->blueprint();
+        return $this->schema()->blueprint($options);
     }
 
     /**

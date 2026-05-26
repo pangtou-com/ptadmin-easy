@@ -203,7 +203,12 @@ class ResourceField implements IResourceField
             }
         }
 
-        return $this->uniqueRules($rules);
+        $rules = $this->uniqueRules($rules);
+        if (!$this->hasRule($rules, 'required') && !$this->hasRule($rules, 'nullable')) {
+            array_unshift($rules, 'nullable');
+        }
+
+        return $rules;
     }
 
     public function getRuleMessages(): array
@@ -610,6 +615,22 @@ class ResourceField implements IResourceField
         }
 
         return $normalized;
+    }
+
+    private function hasRule(array $rules, string $ruleName): bool
+    {
+        foreach ($rules as $rule) {
+            if (!\is_string($rule)) {
+                continue;
+            }
+
+            $name = strtolower(trim(explode(':', $rule, 2)[0]));
+            if ($name === strtolower($ruleName)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function normalizeRegexPattern(string $pattern): string

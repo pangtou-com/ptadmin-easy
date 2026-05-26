@@ -215,8 +215,10 @@ final class SchemaDefinition
      *
      * @return array<string, mixed>
      */
-    public function blueprint(): array
+    public function blueprint(array $options = []): array
     {
+        $includeInferredRules = $this->shouldIncludeInferredRules($options);
+
         return [
             'resource' => [
                 'name' => $this->name(),
@@ -231,13 +233,31 @@ final class SchemaDefinition
                 'form' => $this->formView(),
             ],
             'layout' => $this->layout(),
-            'fields' => array_values(array_map(static function (FieldDefinition $field): array {
-                return $field->toArray();
+            'fields' => array_values(array_map(static function (FieldDefinition $field) use ($includeInferredRules): array {
+                return $field->toArray([
+                    'infer_rules' => $includeInferredRules,
+                ]);
             }, $this->fields())),
             'relations' => $this->relations(),
             'permissions' => $this->permissions(),
             'charts' => $this->charts(),
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    private function shouldIncludeInferredRules(array $options): bool
+    {
+        if (array_key_exists('infer_rules', $options)) {
+            return true === (bool) $options['infer_rules'];
+        }
+
+        if (array_key_exists('include_inferred_rules', $options)) {
+            return true === (bool) $options['include_inferred_rules'];
+        }
+
+        return true;
     }
 
     /**
