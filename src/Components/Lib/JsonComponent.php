@@ -20,4 +20,32 @@ use PTAdmin\Easy\Components\AbstractComponent;
 class JsonComponent extends AbstractComponent
 {
     protected $column_type = 'json';
+
+    public function saveFormat($value)
+    {
+        if (null === $value || '' === $value) {
+            return null;
+        }
+
+        if (\is_array($value)) {
+            return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        }
+
+        return (string) $value;
+    }
+
+    public function toFormat($value)
+    {
+        if (null === $value || '' === $value) {
+            return null;
+        }
+
+        if (\is_array($value)) {
+            return $value;
+        }
+
+        $decoded = json_decode((string) $value, true);
+
+        return JSON_ERROR_NONE === json_last_error() ? $decoded : $value;
+    }
 }

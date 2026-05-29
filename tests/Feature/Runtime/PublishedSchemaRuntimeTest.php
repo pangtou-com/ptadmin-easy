@@ -113,3 +113,50 @@ it('preserves table search and form root protocol after publish', function (): v
         ->and(data_get($blueprint, 'views.form.wrapper.title'))->toBe('编辑栏目')
         ->and(data_get($blueprint, 'views.form.footer'))->toBeFalse();
 });
+
+it('can save key-value object values through doc create and update', function (): void {
+    $table = easyRuntimeTable('runtime_key_value');
+    $schema = easyRuntimeSchema($table, [
+        'module' => 'cms',
+        'fields' => [
+            [
+                'name' => 'title',
+                'type' => 'text',
+                'label' => '标题',
+                'rules' => ['required', 'max:100'],
+            ],
+            [
+                'name' => 'metadata',
+                'type' => 'key-value',
+                'label' => '扩展参数',
+                'rules' => ['nullable'],
+            ],
+        ],
+    ]);
+
+    Easy::release($table, 'cms')->publish($schema, ['remark' => 'key-value object']);
+
+    $created = Easy::doc($table, 'cms')->create([
+        'title' => 'JSON 保存',
+        'metadata' => [
+            'keywords' => 'ptadmin',
+            'description' => 'runtime json field',
+        ],
+    ]);
+
+    $updated = Easy::doc($table, 'cms')->update($created->id, [
+        'metadata' => [
+            'keywords' => 'easy',
+            'description' => 'updated json field',
+        ],
+    ]);
+
+    expect($created->metadata)->toBe([
+        'keywords' => 'ptadmin',
+        'description' => 'runtime json field',
+    ])
+        ->and($updated->metadata)->toBe([
+            'keywords' => 'easy',
+            'description' => 'updated json field',
+        ]);
+});

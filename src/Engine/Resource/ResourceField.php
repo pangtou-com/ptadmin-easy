@@ -235,7 +235,7 @@ class ResourceField implements IResourceField
             return \call_user_func_array([$this, $this->getGetMutatorMethod()], [$val, $model]);
         }
 
-        return $val;
+        return $this->getComponent()->toFormat($val);
     }
 
     public function setComponentAttributeValue($model, $val)
@@ -244,7 +244,7 @@ class ResourceField implements IResourceField
             return \call_user_func_array([$this, $this->getSetMutatorMethod()], [$val, $model]);
         }
 
-        return $val;
+        return $this->getComponent()->saveFormat($val);
     }
 
     public function getDefault()
