@@ -117,6 +117,42 @@ it('exposes split doc schema release and table handles', function (): void {
         ->and(Easy::doc($table)->detail($created->id)->title)->toBe('split api');
 });
 
+it('stores rich text fields as longtext columns', function (): void {
+    $table = easyRuntimeTable('rich_text_columns');
+    $schema = easyRuntimeSchema($table, [
+        'fields' => [
+            [
+                'name' => 'title',
+                'type' => 'text',
+                'label' => '标题',
+                'maxlength' => 100,
+            ],
+            [
+                'name' => 'content',
+                'type' => 'rich_text',
+                'label' => '正文',
+            ],
+        ],
+    ]);
+
+    $schemaHandle = Easy::schema($schema);
+
+    expect(data_get($schemaHandle->fieldMappings(), 'content.storage.column_type'))->toBe('longText')
+        ->and(data_get($schemaHandle->fieldMappings(), 'content.storage.column_definition'))->toBe('longtext')
+        ->and(data_get($schemaHandle->fieldMappings(), 'content.storage.db_type'))->toBe('longText');
+
+    $published = Easy::release($table)->publish($schema);
+
+    $column = DB::table('information_schema.COLUMNS')
+        ->where('TABLE_SCHEMA', DB::getDatabaseName())
+        ->where('TABLE_NAME', $table)
+        ->where('COLUMN_NAME', 'content')
+        ->first();
+
+    expect($published->synced())->toBeTrue()
+        ->and(strtolower((string) $column->DATA_TYPE))->toBe('longtext');
+});
+
 it('can skip create and update validation through execution context', function (): void {
     $table = easyRuntimeTable('skip_validation');
     $schema = easyRuntimeSchema($table);

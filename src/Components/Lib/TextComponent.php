@@ -41,8 +41,11 @@ class TextComponent extends AbstractComponent
 
     public function getColumnType(): string
     {
-        // 富文本编辑时使用text
-        if ($this->richText === $this->filed->getType() || true === (bool) $this->filed->getMetadata('secret', false)) {
+        if ($this->richText === $this->filed->getType()) {
+            return 'longText';
+        }
+
+        if (true === (bool) $this->filed->getMetadata('secret', false)) {
             return 'text';
         }
 

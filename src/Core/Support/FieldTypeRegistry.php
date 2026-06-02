@@ -80,7 +80,7 @@ class FieldTypeRegistry
         return [
             'text' => $this->definition('text', 'string', 'string', ['=', 'like', 'in'], true, true, 'string'),
             'textarea' => $this->definition('text', 'text', 'string', ['like'], true, false, 'string'),
-            'rich_text' => $this->definition('text', 'text', 'string', ['like'], true, false, 'string'),
+            'rich_text' => $this->definition('text', 'longText', 'string', ['like'], true, false, 'string'),
             'password' => $this->definition('text', 'string', 'string', ['='], false, false, 'string'),
             'number' => $this->definition('number', 'integer', 'int', ['=', '>', '>=', '<', '<=', 'between', 'in'], true, true, 'int'),
             'rate' => $this->definition('number', 'tinyinteger', 'int', ['=', '>', '>=', '<', '<=', 'between', 'in'], true, true, 'int'),

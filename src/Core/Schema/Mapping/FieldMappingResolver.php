@@ -122,6 +122,9 @@ final class FieldMappingResolver
             case 'text':
                 return 'text';
 
+            case 'longText':
+                return 'longtext';
+
             case 'json':
                 return 'json';
 
