@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use PTAdmin\Easy\Contracts\IComponent;
 use PTAdmin\Easy\Contracts\IResource;
 use PTAdmin\Easy\Contracts\IResourceField;
+use PTAdmin\Easy\Components\Lib\SelectComponent;
 use PTAdmin\Easy\Core\Schema\Definition\FieldDefinition;
 use PTAdmin\Easy\Core\Schema\Mapping\FieldMappingResolver;
 use PTAdmin\Easy\Core\Support\FieldTypeRegistry;
@@ -73,6 +74,44 @@ final class FieldProtocolTest extends TestCase
         $this->assertFalse($mapping['query']['sortable']);
     }
 
+    public function test_it_maps_checkbox_field_to_default_255_length_string_storage(): void
+    {
+        $rawField = $this->makeFieldMock([
+            'name' => 'tags',
+            'type' => 'checkbox',
+            'label' => '标签',
+        ], 'string');
+
+        $registry = new FieldTypeRegistry();
+        $baseDefinition = new FieldDefinition($rawField);
+        $resolvedDefinition = new FieldDefinition($rawField, $registry->resolve($baseDefinition));
+        $mapping = (new FieldMappingResolver())->resolve($resolvedDefinition);
+
+        $this->assertSame('checkbox', $mapping['component']['type']);
+        $this->assertTrue($mapping['component']['multiple']);
+        $this->assertSame('varchar(255)', $mapping['storage']['column_definition']);
+        $this->assertSame(255, $mapping['storage']['length']);
+        $this->assertSame('array', $mapping['storage']['runtime_cast']);
+    }
+
+    public function test_it_keeps_checkbox_string_storage_at_least_255_when_length_is_smaller(): void
+    {
+        $rawField = $this->makeFieldMock([
+            'name' => 'tags',
+            'type' => 'checkbox',
+            'label' => '标签',
+            'length' => 30,
+        ], 'string');
+
+        $registry = new FieldTypeRegistry();
+        $baseDefinition = new FieldDefinition($rawField);
+        $resolvedDefinition = new FieldDefinition($rawField, $registry->resolve($baseDefinition));
+        $mapping = (new FieldMappingResolver())->resolve($resolvedDefinition);
+
+        $this->assertSame('varchar(255)', $mapping['storage']['column_definition']);
+        $this->assertSame(255, $mapping['storage']['length']);
+    }
+
     public function test_it_exports_text_and_password_formal_props(): void
     {
         $textField = new FieldDefinition($this->makeFieldMock([
@@ -123,17 +162,27 @@ final class FieldProtocolTest extends TestCase
         ], $passwordPayload['slots']);
     }
 
-    private function makeFieldMock(array $metadata, string $columnType = 'json'): IResourceField
+    private function makeFieldMock(
+        array $metadata,
+        string $columnType = 'json',
+        ?IComponent $component = null
+    ): IResourceField
     {
+        if ('checkbox' === ($metadata['type'] ?? null)) {
+            return $this->makeConcreteResourceField($metadata);
+        }
+
         $resource = $this->createMock(IResource::class);
         $resource->method('toArray')->willReturn([
             'search_fields' => [],
             'title_field' => '',
         ]);
 
-        $component = $this->createMock(IComponent::class);
-        $component->method('getColumnType')->willReturn($columnType);
-        $component->method('getColumnArguments')->willReturn([$metadata['name'] ?? 'field']);
+        if (null === $component) {
+            $component = $this->createMock(IComponent::class);
+            $component->method('getColumnType')->willReturn($columnType);
+            $component->method('getColumnArguments')->willReturn([$metadata['name'] ?? 'field']);
+        }
 
         $field = $this->createMock(IResourceField::class);
         $field->method('getName')->willReturn((string) ($metadata['name'] ?? 'field'));
@@ -154,5 +203,140 @@ final class FieldProtocolTest extends TestCase
         });
 
         return $field;
+    }
+
+    private function makeConcreteResourceField(array $metadata): IResourceField
+    {
+        $resource = $this->createMock(IResource::class);
+        $resource->method('toArray')->willReturn([
+            'search_fields' => [],
+            'title_field' => '',
+        ]);
+
+        return new class($metadata, $resource) implements IResourceField {
+            /** @var array<string, mixed> */
+            private $metadata;
+
+            /** @var IResource */
+            private $resource;
+
+            /** @var null|IComponent */
+            private $component = null;
+
+            public function __construct(array $metadata, IResource $resource)
+            {
+                $this->metadata = $metadata;
+                $this->resource = $resource;
+            }
+
+            public function getName(): string
+            {
+                return (string) ($this->metadata['name'] ?? 'field');
+            }
+
+            public function getType(): string
+            {
+                return (string) ($this->metadata['type'] ?? 'text');
+            }
+
+            public function getOptions(): array
+            {
+                return (array) ($this->metadata['options'] ?? []);
+            }
+
+            public function isRelation(): bool
+            {
+                return false;
+            }
+
+            public function isAppend(): bool
+            {
+                return false;
+            }
+
+            public function getAppendName(): string
+            {
+                return $this->getName().'_text';
+            }
+
+            public function getRelation(): array
+            {
+                return (array) ($this->metadata['relation'] ?? []);
+            }
+
+            public function getComment(): string
+            {
+                return (string) ($this->metadata['comment'] ?? ($this->metadata['help'] ?? ''));
+            }
+
+            public function getLabel(): string
+            {
+                return (string) ($this->metadata['label'] ?? '字段');
+            }
+
+            public function getRules($id): array
+            {
+                return (array) ($this->metadata['rules'] ?? []);
+            }
+
+            public function getComponentAttributeValue($model, $val)
+            {
+                return $val;
+            }
+
+            public function setComponentAttributeValue($model, $val)
+            {
+                return $val;
+            }
+
+            public function getDefault()
+            {
+                return $this->metadata['default'] ?? ($this->metadata['defaultValue'] ?? null);
+            }
+
+            public function required(): ?string
+            {
+                return !empty($this->metadata['required']) ? 'required' : null;
+            }
+
+            public function getMetadata($key = null, $default = null)
+            {
+                return null === $key ? $this->metadata : data_get($this->metadata, $key, $default);
+            }
+
+            public function exists(): bool
+            {
+                return false;
+            }
+
+            public function isVirtual(): bool
+            {
+                return false;
+            }
+
+            public function getResource(): IResource
+            {
+                return $this->resource;
+            }
+
+            public function getComponent(): IComponent
+            {
+                if (null === $this->component) {
+                    $this->component = new SelectComponent($this);
+                }
+
+                return $this->component;
+            }
+
+            public function isMultiple(): bool
+            {
+                return 'checkbox' === $this->getType();
+            }
+
+            public function isSourceResource(): bool
+            {
+                return false;
+            }
+        };
     }
 }

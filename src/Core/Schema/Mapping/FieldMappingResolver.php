@@ -149,18 +149,28 @@ final class FieldMappingResolver
      */
     private function extractLength(FieldDefinition $field, string $columnType, array $columnArguments): ?int
     {
+        if ('string' !== $columnType) {
+            $length = $field->metadata()['length'] ?? null;
+
+            return \is_numeric($length) ? (int) $length : null;
+        }
+
+        $argument = $columnArguments[1] ?? null;
+        if (\is_numeric($argument)) {
+            return (int) $argument;
+        }
+
         $length = $field->metadata()['length'] ?? null;
         if (\is_numeric($length)) {
             return (int) $length;
         }
 
-        if ('string' !== $columnType) {
-            return null;
+        $maxLength = $field->metadata()['maxlength'] ?? null;
+        if (\is_numeric($maxLength)) {
+            return (int) $maxLength;
         }
 
-        $argument = $columnArguments[1] ?? null;
-
-        return \is_numeric($argument) ? (int) $argument : null;
+        return null;
     }
 
     /**

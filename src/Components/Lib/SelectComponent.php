@@ -122,6 +122,6 @@ class SelectComponent extends AbstractComponent
     {
         $length = (int) $this->filed->getMetadata('maxlength', $this->filed->getMetadata('length'));
         $this->column_type = 'string';
-        $this->args = ['length' => max($length, 30)];
+        $this->args = ['length' => max($length, 255)];
     }
 }
