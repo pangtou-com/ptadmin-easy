@@ -72,7 +72,7 @@ trait BaseResourceTrait
 
     public function getControl(): ?string
     {
-        if (!file_exists($this->getResourceControllerPath())) {
+        if (!@file_exists($this->getResourceControllerPath())) {
             return null;
         }
 
