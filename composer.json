@@ -78,5 +78,5 @@
             "pestphp/pest-plugin": true
         }
     },
-    "version": "1.1.14"
+    "version": "1.1.15"
 }
