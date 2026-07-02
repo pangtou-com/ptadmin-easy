@@ -60,7 +60,12 @@ class SchemaSynchronizer
             });
         }
 
-        LaravelSchema::table($definition->raw()->getRawTable(), function (Blueprint $table) use ($definition, $add, $change): void {
+        $tableName = $definition->raw()->getRawTable();
+        $add = array_values(array_filter($add, static function ($fieldName) use ($tableName): bool {
+            return !LaravelSchema::hasColumn($tableName, (string) $fieldName);
+        }));
+
+        LaravelSchema::table($tableName, function (Blueprint $table) use ($definition, $add, $change): void {
             foreach (array_merge($add, $change) as $fieldName) {
                 $field = $definition->raw()->getField((string) $fieldName);
                 if (null === $field) {

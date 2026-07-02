@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 use PTAdmin\Easy\Easy;
 
 beforeEach(function (): void {
@@ -32,6 +33,28 @@ it('草稿版本可以按ID预览并发布', function (): void {
         ->and($history)->toHaveCount(1)
         ->and(DB::table('mod_versions')->where('name', $table)->count())->toBe(1)
         ->and(Schema::hasTable($table))->toBeTrue();
+});
+
+it('发布到已有物理表时会跳过已经存在的新增列', function (): void {
+    $table = easyRuntimeTable('existing_columns');
+    Schema::create($table, function (Blueprint $table): void {
+        $table->id();
+        $table->string('title', 100)->nullable()->comment('已存在标题');
+    });
+
+    $release = Easy::release($table, 'cms');
+    $draft = $release->saveDraft(easyRuntimeSchema($table, [
+        'module' => 'cms',
+    ]), ['remark' => '重建默认模型']);
+    $plan = $release->plan((int) $draft['id']);
+    $published = $release->publish((int) $draft['id']);
+
+    expect($plan->operations()['add_fields'])->toContain('title', 'tenant_id', 'status')
+        ->and($published->version()['status'])->toBe('published')
+        ->and(Schema::hasColumn($table, 'title'))->toBeTrue()
+        ->and(Schema::hasColumn($table, 'tenant_id'))->toBeTrue()
+        ->and(Schema::hasColumn($table, 'status'))->toBeTrue()
+        ->and(DB::table('mod_fields')->where('mod_id', data_get($published->version(), 'mod_id'))->where('name', 'title')->exists())->toBeTrue();
 });
 
 it('发布时会校验草稿版本归属与状态', function (): void {
